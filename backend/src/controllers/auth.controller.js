@@ -1,8 +1,6 @@
 import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import { generateToken } from '../lib/utils.js';
-import { sendWelcomeEmail } from '../emails/emailHandlers.js';
-import { ENV } from '../lib/env.js';
 import cloudinary from '../lib/cloudinary.js';
 
 export const signup = async (req, res) => {
@@ -52,12 +50,6 @@ export const signup = async (req, res) => {
                 email: savedUser.email,
                 profilePic: savedUser.profilePic,
             });
-
-            // try {
-            //     await sendWelcomeEmail(savedUser.email, savedUser.fullName, ENV.CLIENT_URL);
-            // } catch (error) {
-            //     console.log("Error sending welcome email", error.message);
-            // }
 
         } else {
             res.status(400).json({message: "Invalid user data"});

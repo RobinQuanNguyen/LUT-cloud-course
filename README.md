@@ -13,8 +13,6 @@ Feature:
 - Deployment with Sevalla
 
 Upcoming feature:
-- Send welcome email (require a owned domain)
-- Test automation using Robot Framework
 - CI/CD using Github Action
 - (Front-end) Indicators for unseen message
 - (Front-end) New features for chat container.
@@ -26,7 +24,6 @@ Upcoming feature:
 - Cloudinary (for storing image): https://cloudinary.com/
 - Arcjet (for preventing DDOS and protect the app from bot): https://app.arcjet.com/
 - Sevalla (for deploying web application): https://app.sevalla.com/
-- Resend (for sending welcome email): https://resend.com/
 
 ### Frontend:
 - tailwindcss: https://v3.tailwindcss.com/
@@ -48,10 +45,6 @@ MONGO_URI=your_mongo_uri_here
 NODE_ENV=development
 
 JWT_SECRET=your_jwt_secret
-
-RESEND_API_KEY=your_resend_api_key
-EMAIL_FROM=your_email_from_address
-EMAIL_FROM_NAME=your_email_from_name
 
 CLIENT_URL=http://localhost:5173 (if you have a URL from Sevalla, replace the localhost with it)
 
