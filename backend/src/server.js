@@ -15,7 +15,7 @@ import { app, server } from './lib/socket.js'; // Import the Express app from th
 
 const __dirname = path.resolve();
 
-const PORT = ENV.RUN_PORT || 3000;
+const PORT = ENV.RUN_PORT || 3001;
 
 app.use(cors({origin: ENV.CLIENT_URL, credentials: true})); // enable CORS for the frontend URL. Allows frontend to send cookies (credentials: true) and access responses from the backend. Adjust origin as needed for production.
 
