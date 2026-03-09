@@ -11,6 +11,18 @@
 10. ⏳(**Have to complete the whole task - For security, we have Arcjet to protect use from DDOS and BOT**) HTTPS support & security
 
 ---
+## Agenda:
+### Sprint 1 (10/3 - 17/3. Next meeting: 17/3):
+- Task 2: Quan + prepare the doc
+- Task 6: Thet
+- Task 7: Thet
+- Task 10: Hung
+
+### Srpint 2:
+- Task 4
+
+### Sprint 3:
+- Task 8, 9
 
 ## Next deadline 🗓️:
 **15/3**: Send the project description for acceptance.
@@ -353,4 +365,133 @@ const logger = winston.createLogger({
 2. ✅ **Traefik Setup:** Basic reverse proxy (Week 1-2)
 3. ✅ **Prometheus + Grafana:** Minimal monitoring (Week 2)
 4. 📋 **Optional:** Add Loki for centralized logging (Week 3+)
+
+---
+
+## Frontend Migration To Nginx (Step-by-Step)
+
+This is not a replacement for axios. Axios stays in the frontend for API calls. Nginx will serve static frontend files and reverse proxy `/api` and `/socket.io` to backend.
+
+### Architecture Diagrams
+
+#### Current Architecture
+
+```mermaid
+flowchart LR
+  B[Browser] --> N[Node.js Backend :3001]
+  N --> F[Serves frontend dist]
+  N --> A[Handles API /api/*]
+  N --> S[Handles Socket.IO]
+```
+
+#### With Nginx Architecture
+
+```mermaid
+flowchart LR
+  B[Browser] --> X[Nginx :80]
+  X --> F[Serve frontend static files]
+  X -->|/api/*| N[Node.js Backend :3001]
+  X -->|/socket.io/*| N
+```
+
+### Step 1: Build Frontend Output
+
+Run in frontend folder:
+
+```bash
+npm install
+npm run build
+```
+
+Result: frontend static files are generated in `frontend/dist`.
+
+### Step 2: Create Nginx Config
+
+Create `frontend/nginx.conf`:
+
+```nginx
+server {
+  listen 80;
+  server_name _;
+
+  root /usr/share/nginx/html;
+  index index.html;
+
+  # React SPA routing
+  location / {
+    try_files $uri $uri/ /index.html;
+  }
+
+  # Backend REST API proxy
+  location /api/ {
+    proxy_pass http://backend:3001;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+  }
+
+  # Socket.IO proxy
+  location /socket.io/ {
+    proxy_pass http://backend:3001;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host $host;
+  }
+}
+```
+
+### Step 3: Create Frontend Dockerfile (Nginx)
+
+Create `frontend/Dockerfile`:
+
+```dockerfile
+FROM node:20-alpine AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm install
+COPY . .
+RUN npm run build
+
+FROM nginx:1.27-alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+```
+
+### Step 4: Keep Axios Base URL As Relative Path
+
+`frontend/src/lib/axios.js` should keep production base URL as `/api`.
+
+Why: browser sends `/api/*` to Nginx, then Nginx forwards to backend.
+
+### Step 5: Stop Serving Frontend In Backend (Production)
+
+Remove backend static frontend serving block in production (the part that serves `frontend/dist`), because Nginx now handles frontend files.
+
+### Step 6: Compose Services On Same Network
+
+In `docker-compose.yml`:
+
+- frontend service: built from `frontend/Dockerfile`, expose `80:80`
+- backend service: expose internal `3001`
+- both on same Docker network (example: `app-network`)
+
+### Step 7: Verify End-to-End
+
+1. Open frontend from Nginx URL
+2. Login and verify cookie-based auth still works
+3. Test API requests (`/api/auth/check`, `/api/message/*`)
+4. Test realtime chat (Socket.IO)
+
+### Minimal File Changes For This Migration
+
+- New file: `frontend/nginx.conf`
+- New file: `frontend/Dockerfile`
+- Update file: `docker-compose.yml`
+- Update file: backend server entry (remove frontend static serving in production)
+
+Total: 4 files.
 
