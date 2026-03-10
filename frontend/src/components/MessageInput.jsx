@@ -1,72 +1,82 @@
-import useKeyboardSound from "../hooks/useKeyboardSounds"
-import { useState, useRef } from "react"
-import { useChatStore } from "../store/useChatStore.js"
-import { XIcon, ImageIcon, SendIcon } from "lucide-react"
-import { toast } from "react-hot-toast"
+import { ImageIcon, SendIcon, XIcon } from "lucide-react";
+import { useRef, useState } from "react";
+import { toast } from "react-hot-toast";
+import useKeyboardSound from "../hooks/useKeyboardSounds";
+import { useChatStore } from "../store/useChatStore.js";
+
+const MAX_IMAGE_BYTES = Number(import.meta.env.VITE_MAX_IMAGE_UPLOAD_BYTES || 5 * 1024 * 1024);
 
 function MessageInput() {
-  const { playRandomKeyStrokeSound } = useKeyboardSound()
-  const [text, setText] = useState("")
-  const [imagePreview, setImagePreview] = useState(null)
+  const { playRandomKeyStrokeSound } = useKeyboardSound();
+  const [text, setText] = useState("");
+  const [imagePreview, setImagePreview] = useState(null);
+  const fileInputRef = useRef(null);
+  const { sendMessage, isSoundEnabled } = useChatStore();
 
-  const fileInputRef = useRef(null)
+  const handleSendMessage = (event) => {
+    event.preventDefault();
 
-  const {sendMessage, isSoundEnabled} = useChatStore()
+    const normalizedText = text.trim();
 
-  const handleSendMessage = (e) => {
-    e.preventDefault()
-    if (!text.trim() && !imagePreview) return
+    if (!normalizedText && !imagePreview) {
+      return;
+    }
 
     if (isSoundEnabled) {
-      playRandomKeyStrokeSound()
+      playRandomKeyStrokeSound();
     }
 
     sendMessage({
-      text: text.trim(),
-      image: imagePreview
-    })
+      text: normalizedText,
+      image: imagePreview,
+    });
 
-    setText("")
-    setImagePreview(null)
+    setText("");
+    setImagePreview(null);
 
     if (fileInputRef.current) {
-      fileInputRef.current.value = null
+      fileInputRef.current.value = null;
     }
-  }
+  };
 
-    const handleImageChange = (e) => {
-      const file = e.target.files[0]
-      if (!file.type.startsWith("image/")) {
-        toast.error("Please select a valid image file")
-        return
-      }
+  const handleImageChange = (event) => {
+    const file = event.target.files?.[0];
 
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result)
-      }
-      reader.readAsDataURL(file)
+    if (!file) {
+      return;
     }
 
-    const removeImage = () => {
-      setImagePreview(null)
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ""
-      }
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select a valid image file");
+      return;
     }
-  
 
+    if (file.size > MAX_IMAGE_BYTES) {
+      toast.error("Image is too large");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImagePreview(reader.result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   return (
     <div className="p-4 border-t border-slate-700/50">
       {imagePreview && (
         <div className="max-w-3xl mx-auto mb-3 flex items-center">
           <div className="relative">
-            <img
-              src={imagePreview}
-              alt="Preview"
-              className="w-20 h-20 object-cover rounded-lg border border-slate-700"
-            />
+            <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-lg border border-slate-700" />
             <button
               onClick={removeImage}
               className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-slate-800 flex items-center justify-center text-slate-200 hover:bg-slate-700"
@@ -79,25 +89,22 @@ function MessageInput() {
       )}
 
       <form onSubmit={handleSendMessage} className="max-w-3xl mx-auto flex space space-x-4">
-        <input type="text"
+        <input
+          type="text"
           value={text}
-          onChange={(e) => {
-            setText(e.target.value)
+          onChange={(event) => {
+            const nextValue = event.target.value.slice(0, 2000);
+            setText(nextValue);
             if (isSoundEnabled) {
-              playRandomKeyStrokeSound()
-            }  
+              playRandomKeyStrokeSound();
+            }
           }}
           className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg py-2 px-4"
           placeholder="Type your message..."
+          maxLength={2000}
         />
 
-        <input 
-          type="file"
-          accept="image/*"
-          ref={fileInputRef}
-          onChange={handleImageChange}
-          className="hidden"
-        />
+        <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
 
         <button
           type="button"
@@ -109,14 +116,14 @@ function MessageInput() {
 
         <button
           type="submit"
-          disabled={!text.trim() && !imagePreview}  
+          disabled={!text.trim() && !imagePreview}
           className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg px-4 py-2 font-medium hover:from-cyan-600 hover:to-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <SendIcon className="w-5 h-5"/>
+          <SendIcon className="w-5 h-5" />
         </button>
       </form>
     </div>
-  )
+  );
 }
 
-export default MessageInput
+export default MessageInput;

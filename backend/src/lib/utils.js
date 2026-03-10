@@ -1,24 +1,34 @@
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 import { ENV } from "./env.js";
 
+const cookieOptions = {
+  maxAge: ENV.JWT_COOKIE_MAX_AGE_MS,
+  httpOnly: true,
+  sameSite: "strict",
+  secure: ENV.NODE_ENV === "production",
+  path: "/",
+};
+
+if (ENV.COOKIE_DOMAIN) {
+  cookieOptions.domain = ENV.COOKIE_DOMAIN;
+}
 
 export const generateToken = (userId, res) => {
-    // JWT_SECRET check
-    const {JWT_SECRET} = ENV;
-    if (!JWT_SECRET) {
-        throw new Error("JWT_SECRET is not defined in environment variables");
-    }
+  if (!ENV.JWT_SECRET) {
+    throw new Error("JWT_SECRET is not defined");
+  }
 
-    const token = jwt.sign({userId:userId}, JWT_SECRET, {
-        expiresIn: "7d"
-    }); // userID to know which user owns the token
+  const token = jwt.sign({ userId }, ENV.JWT_SECRET, {
+    expiresIn: ENV.JWT_EXPIRES_IN,
+  });
 
-    res.cookie("jwt", token, {
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        httpOnly: true, // only accessible by the server, not by client-side JS
-        sameSite: "strict", // only send cookie for same site requests
-        secure: ENV.NODE_ENV === "development" ? false : true, // only send cookie over HTTPS in production
-    });
+  res.cookie(ENV.JWT_COOKIE_NAME, token, cookieOptions);
+  return token;
+};
 
-    return token;
-}
+export const clearAuthCookie = (res) => {
+  res.cookie(ENV.JWT_COOKIE_NAME, "", {
+    ...cookieOptions,
+    maxAge: 0,
+  });
+};

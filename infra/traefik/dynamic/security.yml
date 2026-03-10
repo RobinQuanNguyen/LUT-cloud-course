@@ -1,0 +1,26 @@
+http:
+  middlewares:
+    secure-headers:
+      headers:
+        stsSeconds: 31536000
+        stsIncludeSubdomains: true
+        browserXssFilter: true
+        contentTypeNosniff: true
+        frameDeny: true
+        referrerPolicy: strict-origin-when-cross-origin
+        customResponseHeaders:
+          Permissions-Policy: camera=(), microphone=(), geolocation=()
+          Cross-Origin-Opener-Policy: same-origin
+          Cross-Origin-Resource-Policy: same-site
+    edge-ratelimit:
+      rateLimit:
+        average: 100
+        burst: 50
+    compress-all:
+      compress: {}
+    security-chain:
+      chain:
+        middlewares:
+          - secure-headers
+          - edge-ratelimit
+          - compress-all

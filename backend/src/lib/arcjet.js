@@ -1,32 +1,33 @@
-import arcjet, { shield, detectBot, slidingWindow } from "@arcjet/node";
+import arcjet, { detectBot, shield, slidingWindow } from "@arcjet/node";
 import { ENV } from "./env.js";
 
-const aj = arcjet({
-  key: ENV.ARCJET_KEY,
-  rules: [
-    // Shield protects your app from common attacks e.g. SQL injection
-    shield({ mode: "LIVE" }),
-    // Create a bot detection rule
-    detectBot({
-      mode: "LIVE", // Blocks requests. Use "DRY_RUN" to log only
-      // Block all bots except the following
-      allow: [
-        "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
-        //"USER_AGENT:PostmanRuntime", // Allow Postman for testing
-        "CATEGORY:TOOL",
-        // Uncomment to allow these other common bot categories
-        // See the full list at https://arcjet.com/bot-list
-        //"CATEGORY:MONITOR", // Uptime monitoring services
-        //"CATEGORY:PREVIEW", // Link previews e.g. Slack, Discord
+const fallbackDecision = {
+  isDenied: () => false,
+  results: [],
+  reason: {
+    isRateLimit: () => false,
+    isBot: () => false,
+  },
+};
+
+const aj = ENV.ARCJET_KEY
+  ? arcjet({
+      key: ENV.ARCJET_KEY,
+      rules: [
+        shield({ mode: "LIVE" }),
+        detectBot({
+          mode: "LIVE",
+          allow: ["CATEGORY:SEARCH_ENGINE", "CATEGORY:TOOL"],
+        }),
+        slidingWindow({
+          mode: "LIVE",
+          max: 100,
+          interval: 60,
+        }),
       ],
-    }),
-    // Create a token bucket rate limit. Other algorithms are supported.
-    slidingWindow({
-        mode: "LIVE",
-        max: 100, // Max 100 requests
-        interval: 60, // Per 60 seconds
     })
-  ],
-});
+  : {
+      protect: async () => fallbackDecision,
+    };
 
 export default aj;
