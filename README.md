@@ -1,7 +1,5 @@
 <h1>Full-stack Chat Application</h1>
 
-[Demo App](https://chatify-6cw27.sevalla.app/)
-
 Feature:
 - Custom JWT Authentication
 - Real-time Messaging via Socket.io
