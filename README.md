@@ -1,7 +1,5 @@
 <h1>Full-stack Chat Application</h1>
 
-[Demo App](https://chatify-6cw27.sevalla.app/)
-
 Feature:
 - Custom JWT Authentication
 - Real-time Messaging via Socket.io
@@ -57,19 +55,28 @@ ARCJET_ENV=development
 ```
 
 ---
+**Run Commands:**
 
-## 🔧 Run the Backend
+Have your Docker desktop ready. Start in background from `/LUT-cloud-course`:
 
 ```bash
-cd backend
-npm install
-npm run dev
+docker compose up --build -d
 ```
 
-## 💻 Run the Frontend
+The app is now running at: [http://localhost:8080](http://localhost:8080)
 
+View logs:
 ```bash
-cd frontend
-npm install
-npm run dev
+docker compose logs -f frontend
+docker compose logs -f backend
+```
+
+Stop all:
+```bash
+docker compose down
+```
+
+Stop and remove volumes (if DB volumes added):
+```bash
+docker compose down -v
 ```

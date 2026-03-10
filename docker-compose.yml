@@ -1,0 +1,25 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lut-backend
+    env_file:
+      - ./backend/.env
+    environment:
+      RUN_PORT: 3001
+      CLIENT_URL: http://localhost:8080
+    expose:
+      - "3001"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lut-frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: unless-stopped

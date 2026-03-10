@@ -139,3 +139,89 @@ flowchart TD
 - Frontend routing is protected at component level in `App.jsx` using `Navigate`.
 - JWT is stored in cookies by backend and sent automatically because axios uses `withCredentials: true`.
 - Message sending uses optimistic UI for fast feedback, then reconciles with backend response.
+
+---
+
+## 7) Nginx Request Flow
+
+Nginx runs inside the frontend container and routes incoming requests:
+
+```mermaid
+flowchart LR
+	B["Browser<br/>localhost:8080"] --> N["Nginx<br/>Port 80"]
+	N --> R{Request Path}
+	
+	R -->|/ or /assets/*<br/>or other static| SF["Serve Static<br/>Files<br/>(React dist/)"]
+	R -->|/api/*| BP["Proxy to Backend<br/>http://backend:3001"]
+	R -->|/socket.io/*| SIO["Proxy to Backend<br/>http://backend:3001<br/>(WebSocket Upgrade)"]
+	R -->|Any other route| SPA["SPA Fallback<br/>Serve index.html"]
+	
+	BP --> BE["Backend API<br/>(Express)"]
+	SIO --> BE
+	SF --> B
+	SPA --> B
+	BE --> B
+```
+
+**Key Nginx Rules:**
+- `client_max_body_size 10M` - Allows large image uploads in messages
+- `try_files $uri $uri/ /index.html` - SPA routing fallback
+- `proxy_read_timeout 600s` and `proxy_send_timeout 600s` - WebSocket stability
+- `Upgrade` + `Connection "upgrade"` headers - WebSocket protocol support
+
+---
+
+## 8) Docker Compose Architecture
+
+When you run `docker compose up --build`, both containers are created on a shared Docker network:
+
+```mermaid
+flowchart TB
+	subgraph Host["Host Machine (Windows)"]
+		Port["Port 8080"]
+	end
+	
+	subgraph DockerNet["Docker Network<br/>(lut-cloud-course_default)"]
+		FE["Frontend Container<br/>(lut-frontend)<br/>Nginx on :80"]
+		BE["Backend Container<br/>(lut-backend)<br/>Express on :3001"]
+	end
+	
+	Browser["Browser<br/>http://localhost:8080"] --> Port
+	Port --> FE
+	FE -->|Proxies /api<br/>and /socket.io| BE
+	FE -->|Uses hostname<br/>'backend:3001'| BE
+	BE --> MongoDB["MongoDB<br/>(external)"]
+	BE --> Cloudinary["Cloudinary<br/>(external)"]
+	
+	style FE fill:#e1f5ff
+	style BE fill:#fff3e0
+	style DockerNet fill:#f5f5f5
+```
+
+**Container Details:**
+- **Frontend**: Node.js build stage → Nginx serving React dist in final stage. Exposes port 80 (mapped to host 8080).
+- **Backend**: Node.js running Express. Exposes port 3001 (internal only, not directly accessible from host).
+- **Network**: Both containers share `lut-cloud-course_default` network, so `backend` hostname resolves to the backend container's internal IP.
+
+**Docker Compose Flow:**
+1. `docker compose up --build` reads `docker-compose.yml`
+2. Builds both Dockerfiles (frontend and backend) if images don't exist
+3. Creates shared network and both containers
+4. Starts backend first (dependency), then frontend
+5. Routes requests: Browser → Port 8080 → Nginx → /api proxies to backend:3001 → Express
+
+**Run Commands:**
+```bash
+# Start in background
+docker compose up --build -d
+
+# View logs
+docker compose logs -f frontend
+docker compose logs -f backend
+
+# Stop all
+docker compose down
+
+# Stop and remove volumes (if DB volumes added)
+docker compose down -v
+```
