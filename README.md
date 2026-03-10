@@ -55,28 +55,28 @@ ARCJET_ENV=development
 ```
 
 ---
-**Run Commands:**
+## Run Commands:
 
-Have your Docker desktop ready. Start in background from `/LUT-cloud-course`:
+1. Have your Docker desktop ready. Start in background from `/LUT-cloud-course`:
 
-```bash
-docker compose up --build -d
-```
+    ```bash
+    docker compose up --build -d
+    ```
 
-The app is now running at: [http://localhost:8080](http://localhost:8080)
+2. The app is now running at: [http://localhost:8080](http://localhost:8080)
 
-View logs:
-```bash
-docker compose logs -f frontend
-docker compose logs -f backend
-```
+   View logs:
+   ```bash
+   docker compose logs -f frontend
+   docker compose logs -f backend
+   ```
 
-Stop all:
-```bash
-docker compose down
-```
+3. Stop all:
+    ```bash
+    docker compose down
+    ```
 
-Stop and remove volumes (if DB volumes added):
-```bash
-docker compose down -v
-```
+    (Optional) Stop and remove volumes (if DB volumes added):
+    ```bash
+    docker compose down -v
+    ```
