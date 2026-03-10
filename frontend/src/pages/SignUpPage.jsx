@@ -90,12 +90,6 @@ function SignUpPage() {
                     Already have an account? Sign in
                   </Link>
                 </div>
-
-                <div className="mt-6 text-center">
-                  <Link to="/" className="auth-link">
-                    Continue as guest
-                  </Link>
-                </div>
               </div>
             </div>
 

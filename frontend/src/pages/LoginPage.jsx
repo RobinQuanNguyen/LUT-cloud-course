@@ -29,7 +29,7 @@ function LoginPage() {
                   <p className="text-slate-400">Login to access your account</p>
                 </div>
 
-                {/* SIGNUP FORM */}
+                {/* LOGIN FORM */}
                 <form onSubmit={handleSubmit} className="space-y-6">
 
                   {/* EMAIL */}
@@ -77,11 +77,6 @@ function LoginPage() {
                   </Link>
                 </div>
 
-                <div className="mt-6 text-center">
-                  <Link to="/" className="auth-link">
-                    Continue as guest
-                  </Link>
-                </div>
               </div>
             </div>
 
