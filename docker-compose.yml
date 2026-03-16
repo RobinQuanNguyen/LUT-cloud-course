@@ -1,4 +1,18 @@
+# Traefik handels incoming traffic instead of containers directly
+# Reverse proxy that routes requests to the appropriate backend and frontend services based on the request path
 services:
+  traefik:
+    image: traefik:v2.10
+    container_name: lut-traefik
+    ports:
+      - "80:80"
+      - "8080:8080" #Expose Traefik dashboard on port 8080
+    volumes: 
+      - ./traefik.yml:/etc/traefik/traefik.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - app-network
+
   backend:
     build:
       context: ./backend
@@ -8,9 +22,15 @@ services:
       - ./backend/.env
     environment:
       RUN_PORT: 3001
-      CLIENT_URL: http://localhost:8080
+      CLIENT_URL: http://localhost
     expose:
       - "3001"
+    labels: # Traefik labels to route traffic to the backend service
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`) || PathPrefix(`/socket.io`)"
+      - "traefik.http.services.backend.loadbalancer.server.port=3001"
+    networks:
+      - app-network
     restart: unless-stopped
 
   frontend:
@@ -18,8 +38,18 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: lut-frontend
-    ports:
-      - "8080:80"
+    expose:
+      - "80"
+    labels: # Traefik labels to route traffic to the frontend service
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
     depends_on:
       - backend
+    networks:
+      - app-network
     restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
