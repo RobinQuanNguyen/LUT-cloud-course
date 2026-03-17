@@ -1,15 +1,17 @@
 api:
-  dashboard: true #Enable the Traefik dashboard
-  insecure: true
+  dashboard: true
+  insecure: true  # Fine for development
 
 entryPoints:
   web:
-    address: ".80" # Listen on port 80 for HTTP traffic
+    address: ":80"
+  websecure:
+    address: ":443"
 
-providers: 
+providers:
   docker:
     endpoint: "unix:///var/run/docker.sock"
-    exposedByDefault: false # Only expose selective containers to Traefik  
+    exposedByDefault: false
     network: app-network
 
 log:

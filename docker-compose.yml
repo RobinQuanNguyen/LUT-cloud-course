@@ -2,16 +2,18 @@
 # Reverse proxy that routes requests to the appropriate backend and frontend services based on the request path
 services:
   traefik:
-    image: traefik:v2.10
+    image: traefik:v3.6.4
     container_name: lut-traefik
     ports:
       - "80:80"
-      - "8080:8080" #Expose Traefik dashboard on port 8080
-    volumes: 
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
       - ./traefik.yml:/etc/traefik/traefik.yml:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - //var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - app-network
+    restart: unless-stopped
 
   backend:
     build:
@@ -28,6 +30,7 @@ services:
     labels: # Traefik labels to route traffic to the backend service
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=PathPrefix(`/api`) || PathPrefix(`/socket.io`)"
+      - "traefik.http.routers.backend.entrypoints=web"
       - "traefik.http.services.backend.loadbalancer.server.port=3001"
     networks:
       - app-network
@@ -43,6 +46,7 @@ services:
     labels: # Traefik labels to route traffic to the frontend service
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
     depends_on:
       - backend
