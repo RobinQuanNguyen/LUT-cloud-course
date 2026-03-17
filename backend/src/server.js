@@ -12,6 +12,7 @@ import { ENV } from './lib/env.js';
 import { app, server } from './lib/socket.js'; // Import the Express app from the socket module, which also sets up Socket.IO and applies the authentication middleware
 //const app = express();
 
+import promClient from 'prom-client';
 
 const __dirname = path.resolve();
 
@@ -25,6 +26,14 @@ app.use(cookieParser()); // for parsing cookies
 app.use("/api/auth", authRoutes); // All routes in authRoutes will be prefixed with /api/auth
 app.use("/api/message", messageRoutes); // All routes in messageRoutes will be prefixed with /api/message
 
+// Metrics endpoint for Prometheus to scrape
+const register = new promClient.Registry();
+promClient.collectDefaultMetrics({ register }); // Collect default metrics (CPU, memory, etc.)
+
+app.get('/metrics', async (req, res) => {
+    res.set('Content-Type', register.contentType);
+    res.end(await register.metrics());
+});
 // make ready for deployment
 if (ENV.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, "../frontend/dist")))

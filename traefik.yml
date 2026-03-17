@@ -14,5 +14,8 @@ providers:
     exposedByDefault: false
     network: app-network
 
+metrics:
+  prometheus: {}
+  
 log:
   level: INFO
