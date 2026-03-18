@@ -19,10 +19,15 @@
 - Task 10: Hung
 
 ### Srpint 2:
-- Task 4
+- Task 4. Idea:
+Each member implements their own microservices. Janne mentions that the microservices can be done in Python, Rust, or Go, and they should be related to calculation or analysis tasks.
+- Quan's proposal: A Python microservice to analyze the peak and low usage time of users. Or the "trending" keywords. The implementation should be done in the backend first, and there should be a separate UI (frontend) for the admin to view this data. Optional to show the users this data as well.
 
 ### Sprint 3:
 - Task 8, 9
+
+### Sprint 4:
+- Reserve for more functions, as Janne said, "Remember to make the project big enough, so you can justify that there has been enough work for everyone."
 
 ## Next deadline 🗓️:
 **15/3**: Send the project description for acceptance.
