@@ -12,7 +12,7 @@ services:
       - ./traefik.yml:/etc/traefik/traefik.yml:ro
       - //var/run/docker.sock:/var/run/docker.sock:ro
     networks:
-      - app-network
+      - app_internal
     restart: unless-stopped
 
   backend:
@@ -24,8 +24,16 @@ services:
     environment:
       RUN_PORT: 3001
       CLIENT_URL: http://localhost
+      ALLOWED_ORIGINS: http://localhost:8080,http://localhost:5173
+      TRUST_PROXY: "true"
+      NODE_ENV: production
     expose:
       - "3001"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
     labels: # Traefik labels to route traffic to the backend service
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=PathPrefix(`/api`) || PathPrefix(`/socket.io`) || PathPrefix(`/metrics`)"
@@ -33,7 +41,7 @@ services:
       - "traefik.http.routers.backend.priority=10"  
       - "traefik.http.services.backend.loadbalancer.server.port=3001"
     networks:
-      - app-network
+      - app_internal
     restart: unless-stopped
 
   frontend:
@@ -50,9 +58,16 @@ services:
       - "traefik.http.routers.frontend.priority=1"   # ← ADD THIS
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
     depends_on:
-      - backend
+      - backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
     networks:
-      - app-network
+      - app_internal
     restart: unless-stopped
 
   # Task 7
@@ -74,7 +89,7 @@ services:
       - "traefik.http.routers.prometheus.entrypoints=web"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
     networks:
-      - app-network
+      - app_internal
     restart: unless-stopped
 
   grafana:
@@ -97,13 +112,28 @@ services:
     depends_on:
       - prometheus
     networks:
-      - app-network
+      - app_internal
     restart: unless-stopped
 
 networks:
-  app-network:
+  app_internal:
     driver: bridge
 
 volumes:
   prometheus-data:
   grafana-data:
+
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - app_internal
+
+networks:
+  app_internal:
+    driver: bridge

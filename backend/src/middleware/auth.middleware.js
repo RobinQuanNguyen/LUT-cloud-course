@@ -1,32 +1,31 @@
-import jwt from 'jsonwebtoken'
-import { ENV } from '../lib/env.js'
-import User from '../models/User.js';
+import jwt from "jsonwebtoken";
+import User from "../models/User.js";
+import { ENV } from "../lib/env.js";
+import { AppError } from "../lib/errors.js";
 
 export const protectRoute = async (req, res, next) => {
-    try {
-        const token = req.cookies.jwt;
+  try {
+    const token = req.cookies[ENV.JWT_COOKIE_NAME];
 
-        if (!token) {
-            return res.status(401).json({message: "Unauthorized. No token provided"});
-        }
-
-        const decoded = jwt.verify(token, ENV.JWT_SECRET);
-
-        if (!decoded) {
-            return res.status(401).json({message: "Unauthorized. Invalid token"});
-        }
-
-        const user = await User.findById(decoded.userId).select("-password"); // Exclude password from user data
-        if (!user) {
-            return res.status(401).json({message: "Unauthorized. User not found"});
-        }
-
-        req.user = user; // Attach user to request object for use in controllers
-        
-        next(); // so under the next method, we can access req.user to get the authenticated user's data
-
-    } catch (error) {
-        console.log("Error in protectRoute middleware", error.message);
-        res.status(401).json({message: "Not authorized"});
+    if (!token) {
+      throw new AppError(401, "Unauthorized");
     }
-}
+
+    const decoded = jwt.verify(token, ENV.JWT_SECRET);
+
+    if (!decoded?.userId) {
+      throw new AppError(401, "Unauthorized");
+    }
+
+    const user = await User.findById(decoded.userId).select("-password");
+
+    if (!user) {
+      throw new AppError(401, "Unauthorized");
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    next(error.name === "JsonWebTokenError" || error.name === "TokenExpiredError" ? new AppError(401, "Unauthorized") : error);
+  }
+};

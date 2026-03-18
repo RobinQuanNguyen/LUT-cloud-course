@@ -1,25 +1,38 @@
-// Create a model for User
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema(
+  {
     email: {
-        type: String,
-        required: true,
-        unique: true
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      maxlength: 254,
     },
     fullName: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 2,
+      maxlength: 80,
     },
     password: {
-        type: String,
-        minLength: 6
+      type: String,
+      required: true,
+      minlength: 8,
     },
     profilePic: {
-        type: String,
-        default: ""
+      type: String,
+      default: "",
+      trim: true,
     },
-}, {timestamps: true}); // createAt and updateAt built-in fields
+  },
+  {
+    timestamps: true,
+    strict: "throw",
+  }
+);
 
 const User = mongoose.model("User", userSchema);
 
