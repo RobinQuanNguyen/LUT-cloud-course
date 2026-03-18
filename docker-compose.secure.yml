@@ -1,0 +1,66 @@
+services:
+  traefik:
+    image: traefik:v3.1
+    container_name: lut-traefik
+    command:
+      - --configFile=/etc/traefik/traefik.yml
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./infra/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./infra/traefik/dynamic:/etc/traefik/dynamic:ro
+      - ./infra/traefik/acme.json:/acme.json
+    restart: unless-stopped
+    networks:
+      - edge
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: lut-backend
+    env_file:
+      - ./backend/.env
+    environment:
+      RUN_PORT: 3001
+      CLIENT_URL: https://${APP_DOMAIN}
+      ALLOWED_ORIGINS: https://${APP_DOMAIN}
+      TRUST_PROXY: "true"
+      NODE_ENV: production
+      COOKIE_DOMAIN: ${APP_DOMAIN}
+    expose:
+      - "3001"
+    restart: unless-stopped
+    networks:
+      - app_internal
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: lut-frontend
+    depends_on:
+      - backend
+    expose:
+      - "80"
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=edge
+      - traefik.http.routers.chatify.rule=Host(`${APP_DOMAIN}`)
+      - traefik.http.routers.chatify.entrypoints=websecure
+      - traefik.http.routers.chatify.tls=true
+      - traefik.http.routers.chatify.tls.certresolver=letsencrypt
+      - traefik.http.routers.chatify.middlewares=security-chain@file
+      - traefik.http.services.chatify.loadbalancer.server.port=80
+    restart: unless-stopped
+    networks:
+      - edge
+      - app_internal
+
+networks:
+  edge:
+    driver: bridge
+  app_internal:
+    driver: bridge
