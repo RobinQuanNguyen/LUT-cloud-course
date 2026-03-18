@@ -1,14 +1,29 @@
+# Traefik handels incoming traffic instead of containers directly
+# Reverse proxy that routes requests to the appropriate backend and frontend services based on the request path
 services:
+  traefik:
+    image: traefik:v3.6.4
+    container_name: lut-traefik
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"  # Traefik dashboard
+    volumes:
+      - ./traefik.yml:/etc/traefik/traefik.yml:ro
+      - //var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - app_internal
+    restart: unless-stopped
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: lut-backend
     env_file:
       - ./backend/.env
     environment:
       RUN_PORT: 3001
-      CLIENT_URL: http://localhost:8080
+      CLIENT_URL: http://localhost
       ALLOWED_ORIGINS: http://localhost:8080,http://localhost:5173
       TRUST_PROXY: "true"
       NODE_ENV: production
@@ -19,18 +34,95 @@ services:
       interval: 30s
       timeout: 5s
       retries: 5
-    restart: unless-stopped
+    labels: # Traefik labels to route traffic to the backend service
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`) || PathPrefix(`/socket.io`) || PathPrefix(`/metrics`)"
+      - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.routers.backend.priority=10"  
+      - "traefik.http.services.backend.loadbalancer.server.port=3001"
     networks:
       - app_internal
+    restart: unless-stopped
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: lut-frontend
-    ports:
-      - "8080:80"
+    expose:
+      - "80"
+    labels: # Traefik labels to route traffic to the frontend service
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.priority=1"   # ← ADD THIS
+      - "traefik.http.services.frontend.loadbalancer.server.port=80"
     depends_on:
+      - backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - app_internal
+    restart: unless-stopped
+
+  # Task 7
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: lut-prometheus
+    command:
+    - '--config.file=/etc/prometheus/prometheus.yml'
+    - '--web.external-url=/prometheus'
+    - '--web.route-prefix=/prometheus'
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    expose:
+      - "9090"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=PathPrefix(`/prometheus`)"
+      - "traefik.http.routers.prometheus.entrypoints=web"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+    networks:
+      - app_internal
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: lut-grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_SERVER_ROOT_URL=http://localhost/grafana
+      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+    volumes:
+      - grafana-data:/var/lib/grafana
+    expose:
+      - "3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=PathPrefix(`/grafana`)"
+      - "traefik.http.routers.grafana.entrypoints=web"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+    depends_on:
+      - prometheus
+    networks:
+      - app_internal
+    restart: unless-stopped
+
+networks:
+  app_internal:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:
+
       backend:
         condition: service_healthy
     healthcheck:
