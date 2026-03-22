@@ -1,3 +1,5 @@
+# Traefik handels incoming traffic instead of containers directly
+# Reverse proxy that routes requests to the appropriate backend and frontend services based on the request path
 services:
   traefik:
     image: traefik:v3.6.4
@@ -5,7 +7,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"
+      - "8080:8080"  # Traefik dashboard
     volumes:
       - ./traefik.yml:/etc/traefik/traefik.yml:ro
       - //var/run/docker.sock:/var/run/docker.sock:ro
@@ -28,12 +30,13 @@ services:
       NODE_ENV: production
     expose:
       - "3001"
+    
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
       interval: 30s
       timeout: 5s
       retries: 5
-    labels:
+    labels: # Traefik labels to route traffic to the backend service
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=PathPrefix(`/api`) || PathPrefix(`/socket.io`) || PathPrefix(`/metrics`)"
       - "traefik.http.routers.backend.entrypoints=web"
@@ -50,7 +53,7 @@ services:
     container_name: lut-frontend
     expose:
       - "80"
-    labels:
+    labels: # Traefik labels to route traffic to the frontend service
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
       - "traefik.http.routers.frontend.entrypoints=web"
@@ -68,6 +71,7 @@ services:
       - app_internal
     restart: unless-stopped
 
+  # Task 7
   prometheus:
     image: prom/prometheus:latest
     container_name: lut-prometheus
@@ -120,13 +124,4 @@ volumes:
   prometheus-data:
   grafana-data:
 
-      backend:
-        condition: service_healthy
-      healthcheck:
-        test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
-        interval: 30s
-        timeout: 5s
-        retries: 5
-      restart: unless-stopped
-      networks:
-        - app_internal
+    
