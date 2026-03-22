@@ -38,14 +38,6 @@ app.get('/metrics', async (req, res) => {
     res.set('Content-Type', register.contentType);
     res.end(await register.metrics());
 });
-// make ready for deployment
-if (ENV.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, "../frontend/dist")))
-
-    app.get("*", (req, res) => {
-        res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
-    })
-}
 
 if (ENV.TRUST_PROXY) {
   app.set("trust proxy", 1);

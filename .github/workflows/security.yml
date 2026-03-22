@@ -42,5 +42,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: aquasecurity/setup-trivy@v0.2.1
+      - uses: aquasecurity/setup-trivy@v0.2.6
       - run: trivy fs --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1 --format table .
