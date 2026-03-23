@@ -5,22 +5,28 @@ import SignUpPage from './pages/SignUpPage'
 import { useAuthStore } from './store/useAuthStore.js'  
 import { useEffect } from 'react'
 import PageLoader from './components/PageLoader.jsx'
+import MonitoringPage from './pages/MonitoringPage.jsx'
+import { useLocation } from 'react-router'
 
 import { Toaster } from 'react-hot-toast'
 
 function App() {
+  const location = useLocation();
+  const isMonitoringRoute = location.pathname.startsWith('/monitoring');
   const authUser = useAuthStore((s) => s.authUser);
   const isCheckingAuth = useAuthStore((s) => s.isCheckingAuth);
   const checkAuth = useAuthStore((s) => s.checkAuth);
   
 
   useEffect(() => {
-    checkAuth()
-  }, [checkAuth])
+    if (!isMonitoringRoute) {
+      checkAuth()
+    }
+  }, [checkAuth, isMonitoringRoute])
 
   console.log({"Auth User": authUser})
 
-  if (isCheckingAuth) {
+  if (isCheckingAuth && !isMonitoringRoute) {
     return <PageLoader />
   }
 
@@ -33,6 +39,7 @@ function App() {
 
 
       <Routes>
+        <Route path="/monitoring" element={<MonitoringPage />} />
         <Route path="/" element={authUser ? <ChatPage /> : <Navigate to={"/login"} />} /> {/*If user is authenticated, show the ChatPage, otherwise show the LoginPage */} 
         <Route path="/login" element={!authUser ? <LoginPage /> : <Navigate to={"/"} />} />
         <Route path="/signup" element={!authUser ? <SignUpPage /> : <Navigate to={"/"} />} />

@@ -17,6 +17,28 @@ def format_hour_ampm(hour_24: int) -> str:
     return f"{hour_12}:00 {period}"
 
 
+def parse_iso_datetime(value: str, *, field_name: str, local_tz: ZoneInfo) -> datetime:
+    normalized = value.strip()
+    if normalized.endswith("Z"):
+        normalized = normalized[:-1] + "+00:00"
+
+    try:
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"{field_name} must be a valid ISO-8601 datetime, "
+                "for example: 2026-03-01T10:30:00 or 2026-03-01T10:30:00+02:00"
+            ),
+        ) from exc
+
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=local_tz)
+
+    return parsed.astimezone(timezone.utc)
+
+
 def get_collection():
     mongo_uri = os.getenv("MONGO_URI")
     db_name = os.getenv("MONGO_DB_NAME")
@@ -44,6 +66,8 @@ def health():
 @app.get("/usage-analytics/summary")
 def usage_summary(
     days: Optional[int] = Query(default=None, ge=1, le=3650),
+    start_time: Optional[str] = Query(default=None),
+    end_time: Optional[str] = Query(default=None),
     business_start: int = Query(default=9, ge=0, le=23),
     business_end: int = Query(default=18, ge=1, le=24),
 ):
@@ -55,11 +79,41 @@ def usage_summary(
     now_local = datetime.now(helsinki)
     now_utc = now_local.astimezone(timezone.utc)
 
+    has_custom_range = start_time is not None or end_time is not None
+    if has_custom_range and not (start_time and end_time):
+        raise HTTPException(status_code=400, detail="start_time and end_time must be provided together")
+
+    if has_custom_range and days is not None:
+        raise HTTPException(status_code=400, detail="Use either days or start_time/end_time, not both")
+
     since_local = None
+    until_local = now_local
     since = None
+    until = now_utc
+    window_mode = "all_time"
+
     if days is not None:
         since_local = now_local - timedelta(days=days)
         since = since_local.astimezone(timezone.utc)
+        window_mode = f"last_{days}_days"
+
+    if has_custom_range:
+        since = parse_iso_datetime(start_time, field_name="start_time", local_tz=helsinki)
+        until = parse_iso_datetime(end_time, field_name="end_time", local_tz=helsinki)
+        if since >= until:
+            raise HTTPException(status_code=400, detail="start_time must be earlier than end_time")
+
+        since_local = since.astimezone(helsinki)
+        until_local = until.astimezone(helsinki)
+        window_mode = "custom_range"
+
+    match_filter = {}
+    if since is not None:
+        match_filter["$gte"] = since
+    if until is not None and window_mode == "custom_range":
+        match_filter["$lt"] = until
+
+    created_at_match = {"createdAt": match_filter} if match_filter else None
 
     pipeline = [
         {
@@ -76,13 +130,31 @@ def usage_summary(
         {"$sort": {"_id": 1}},
     ]
 
-    if since is not None:
-        pipeline.insert(0, {"$match": {"createdAt": {"$gte": since}}})
+    if created_at_match is not None:
+        pipeline.insert(0, {"$match": created_at_match})
 
     try:
         rows = list(collection.aggregate(pipeline))
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=f"Failed to aggregate messages: {exc}") from exc
+
+    type_pipeline = [
+        {
+            "$project": {
+                "has_image": {
+                    "$gt": [{"$strLenCP": {"$ifNull": ["$image", ""]}}, 0]
+                }
+            }
+        },
+        {"$group": {"_id": "$has_image", "count": {"$sum": 1}}},
+    ]
+    if created_at_match is not None:
+        type_pipeline.insert(0, {"$match": created_at_match})
+
+    try:
+        type_rows = list(collection.aggregate(type_pipeline))
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=f"Failed to aggregate message types: {exc}") from exc
 
     hourly_counts = {hour: 0 for hour in range(24)}
     for row in rows:
@@ -90,6 +162,8 @@ def usage_summary(
         hourly_counts[hour] = int(row["count"])
 
     total_messages = sum(hourly_counts.values())
+    image_messages = sum(int(row["count"]) for row in type_rows if bool(row["_id"]))
+    text_messages = max(total_messages - image_messages, 0)
     peak_count = max(hourly_counts.values()) if hourly_counts else 0
     low_count = min(hourly_counts.values()) if hourly_counts else 0
 
@@ -103,18 +177,28 @@ def usage_summary(
 
     return {
         "window": {
-            "mode": f"last_{days}_days" if days is not None else "all_time",
+            "mode": window_mode,
             "days": days,
             "since_local": since_local.isoformat() if since_local is not None else None,
-            "until_local": now_local.isoformat(),
+            "until_local": until_local.isoformat(),
             "since_utc": since.isoformat() if since is not None else None,
-            "until_utc": now_utc.isoformat(),
+            "until_utc": until.isoformat(),
             "timezone": FINLAND_TZ,
         },
         "totals": {
             "messages": total_messages,
             "business_hours_messages": business_total,
             "off_hours_messages": off_hours_total,
+        },
+        "message_types": {
+            "text": {
+                "count": text_messages,
+                "percentage": round((text_messages / total_messages) * 100, 2) if total_messages else 0,
+            },
+            "image": {
+                "count": image_messages,
+                "percentage": round((image_messages / total_messages) * 100, 2) if total_messages else 0,
+            },
         },
         "peak_usage": {
             "count": peak_count,
