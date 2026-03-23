@@ -1,5 +1,6 @@
 import os
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 from zoneinfo import ZoneInfo
 
 from fastapi import FastAPI, HTTPException, Query
@@ -42,7 +43,7 @@ def health():
 
 @app.get("/usage-analytics/summary")
 def usage_summary(
-    days: int = Query(default=7, ge=1, le=365),
+    days: Optional[int] = Query(default=None, ge=1, le=3650),
     business_start: int = Query(default=9, ge=0, le=23),
     business_end: int = Query(default=18, ge=1, le=24),
 ):
@@ -52,12 +53,15 @@ def usage_summary(
     helsinki = ZoneInfo(FINLAND_TZ)
     collection = get_collection()
     now_local = datetime.now(helsinki)
-    since_local = now_local - timedelta(days=days)
     now_utc = now_local.astimezone(timezone.utc)
-    since = since_local.astimezone(timezone.utc)
+
+    since_local = None
+    since = None
+    if days is not None:
+        since_local = now_local - timedelta(days=days)
+        since = since_local.astimezone(timezone.utc)
 
     pipeline = [
-        {"$match": {"createdAt": {"$gte": since}}},
         {
             "$project": {
                 "hour": {
@@ -71,6 +75,9 @@ def usage_summary(
         {"$group": {"_id": "$hour", "count": {"$sum": 1}}},
         {"$sort": {"_id": 1}},
     ]
+
+    if since is not None:
+        pipeline.insert(0, {"$match": {"createdAt": {"$gte": since}}})
 
     try:
         rows = list(collection.aggregate(pipeline))
@@ -96,10 +103,11 @@ def usage_summary(
 
     return {
         "window": {
+            "mode": f"last_{days}_days" if days is not None else "all_time",
             "days": days,
-            "since_local": since_local.isoformat(),
+            "since_local": since_local.isoformat() if since_local is not None else None,
             "until_local": now_local.isoformat(),
-            "since_utc": since.isoformat(),
+            "since_utc": since.isoformat() if since is not None else None,
             "until_utc": now_utc.isoformat(),
             "timezone": FINLAND_TZ,
         },
