@@ -138,6 +138,7 @@ This downloads the dataset automatically and saves the model to `moderation-serv
     | Traefik Dashboard | http://localhost:8080 |
     | Prometheus | http://localhost/prometheus |
     | Grafana | http://localhost/grafana|
+    | Message Monitoring UI | http://localhost/monitoring |
     | Moderation API | http://localhost/moderation/health |
 
 5. View logs:

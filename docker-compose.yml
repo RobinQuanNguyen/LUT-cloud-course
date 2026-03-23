@@ -46,6 +46,27 @@ services:
       - app_internal
     restart: unless-stopped
 
+  usage-analytics:
+    build:
+      context: ./usage-analytics
+      dockerfile: Dockerfile
+    container_name: lut-usage-analytics
+    env_file:
+      - ./backend/.env
+    environment:
+      ANALYTICS_PORT: 8000
+    expose:
+      - "8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.usage-analytics.rule=PathPrefix(`/usage-analytics`)"
+      - "traefik.http.routers.usage-analytics.entrypoints=web"
+      - "traefik.http.routers.usage-analytics.priority=11"
+      - "traefik.http.services.usage-analytics.loadbalancer.server.port=8000"
+    networks:
+      - app_internal
+    restart: unless-stopped
+
   frontend:
     build:
       context: ./frontend
