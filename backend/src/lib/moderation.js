@@ -1,0 +1,20 @@
+// helper file for content moderation (python microservice)
+const MODERATION_URL = "http://lut-moderation-service:8000/moderate";
+
+export const moderateText = async (text) => {
+    try {
+        const response = await fetch(MODERATION_URL, {
+            method: "POST",
+            headers: {"Content-Type": "application/json" },
+            body: JSON.stringify({ text })
+        });
+
+        if (!response.ok)
+            return { flagged: false, reason: "Moderation service error" }; // fallback to allow message if moderation service fails
+        
+        return await response.json();
+    } catch (error) {
+        console.error("Moderation service error:", error.message);
+        return { flagged: false}; // Better to allow message than break chat functionality
+    }
+}

@@ -3,6 +3,7 @@ import Message from "../models/Message.js";
 import User from "../models/User.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 import { AppError } from "../lib/errors.js";
+import { moderateText } from "../lib/moderation.js";
 
 export const getAllContacts = async (req, res, next) => {
   try {
@@ -50,6 +51,15 @@ export const sendMessage = async (req, res, next) => {
       throw new AppError(404, "Receiver not found");
     }
 
+    // Moderate text before saving
+    let finalText = text;
+    if (text && text.trim()) {
+      const modResult = await moderateText(text);
+      if (modResult.flagged) {
+        finalText = "*****";
+      }
+    }
+
     let imageUrl = "";
 
     if (image) {
@@ -63,7 +73,7 @@ export const sendMessage = async (req, res, next) => {
     const newMessage = await Message.create({
       senderId,
       receiverId,
-      text,
+      text: finalText,  // censored text if flagged
       image: imageUrl,
     });
 
