@@ -79,6 +79,7 @@ ARCJET_ENV=development
     | Traefik Dashboard | http://localhost:8080 |
     | Prometheus | http://localhost/prometheus |
     | Grafana | http://localhost/grafana|
+    | Message Monitoring UI | http://localhost/monitoring |
 
 4. View logs:
    ```bash
