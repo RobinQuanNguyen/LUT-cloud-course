@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react'
-import { LogOutIcon, Volume2Icon, VolumeOffIcon } from "lucide-react"
+import { LogOutIcon, Volume2Icon, VolumeOffIcon, ShieldIcon } from "lucide-react"
 import { useAuthStore } from '../store/useAuthStore'
 import { useChatStore } from '../store/useChatStore'
 
@@ -7,7 +7,7 @@ const mouseClickSound = new Audio("/sounds/mouse-click.mp3")
 
 
 function ProfileHeader() {
-    const { logout, authUser, updateProfile } = useAuthStore()
+    const { logout, authUser, updateProfile, updateContentFilter } = useAuthStore()
     const { isSoundEnabled, toggleSound } = useChatStore()
     const [selectedImg, setSelectedImg] = useState(null)
 
@@ -82,6 +82,15 @@ function ProfileHeader() {
                     ) : (
                         <VolumeOffIcon className="size-5"/> 
                     )}
+                </button>
+
+                {/* CONTENT FILTER TOGGLE */}
+                <button
+                    className={`transition-colors ${authUser?.contentFilter ? "text-cyan-400 hover:text-cyan-300" : "text-slate-400 hover:text-slate-200"}`}
+                    onClick={() => updateContentFilter(!authUser?.contentFilter)}
+                    title={authUser?.contentFilter ? "Content filter ON" : "Content filter OFF"}
+                >
+                    <ShieldIcon className="size-5"/>
                 </button>
             </div>
         </div>

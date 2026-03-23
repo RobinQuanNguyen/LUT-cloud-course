@@ -1,10 +1,15 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from prometheus_client import make_asgi_app, Counter, Histogram
-from app.model import predict
+from app.model import predict, load_model
 import time
 
 app = FastAPI(title="[Python] Content Moderation Service")
+
+@app.on_event("startup")
+def startup_event():
+    print("Pre-loading model into memory...")
+    load_model()
 
 # Prometheus metrics
 request_count = Counter(

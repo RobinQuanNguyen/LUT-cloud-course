@@ -54,9 +54,17 @@ export const sendMessage = async (req, res, next) => {
     // Moderate text before saving
     let finalText = text;
     if (text && text.trim()) {
-      const modResult = await moderateText(text);
-      if (modResult.flagged) {
-        finalText = "*****";
+      try {
+        const receiver = await User.findById(receiverId).select("contentFilter");
+        if (receiver?.contentFilter === true) {
+          const modResult = await moderateText(text);
+          if (modResult.flagged) {
+            finalText = "********";
+          }
+        }
+      } catch (err) {
+        console.error("Content filter check failed:", err.message);
+        // save message as-is if check fails
       }
     }
 

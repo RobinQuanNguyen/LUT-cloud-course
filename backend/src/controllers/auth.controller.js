@@ -23,6 +23,7 @@ export const signup = async (req, res, next) => {
       fullName: user.fullName,
       email: user.email,
       profilePic: user.profilePic,
+      contentFilter: user.contentFilter
     });
   } catch (error) {
     next(error);
@@ -52,6 +53,8 @@ export const login = async (req, res, next) => {
       fullName: user.fullName,
       email: user.email,
       profilePic: user.profilePic,
+      contentFilter: user.contentFilter
+
     });
   } catch (error) {
     next(error);
@@ -78,6 +81,24 @@ export const updateProfile = async (req, res, next) => {
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       { profilePic: uploadResponse.secure_url },
+      { new: true }
+    ).select("-password");
+
+    res.status(200).json(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateContentFilter = async (req, res, next) => {
+  try {
+    const { contentFilter } = req.body;
+    if (typeof contentFilter !== "boolean") {
+      throw new AppError(400, "contentFilter must be a boolean");
+    }
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { contentFilter },
       { new: true }
     ).select("-password");
 
