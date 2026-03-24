@@ -1,4 +1,6 @@
 node_modules
 .env
 .venv
-moderation-service/models/*.joblib
+moderation-service/models/*
+moderation-service/app/__pycache__/*
+usage-analytics/__pycache__/*
