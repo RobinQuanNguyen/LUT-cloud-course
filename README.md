@@ -163,7 +163,35 @@ This downloads the dataset automatically and saves the model to `moderation-serv
     docker compose down -v
     ```
 
+## Moderation-service
 
+- FastAPI service serving predictions at /moderation/moderate
+- ML model trained on Jigsaw Toxic Comments dataset (159k samples) using TF-IDF + Logistic Regression
+- Prometheus metrics endpoint at /moderation/metrics - integrated into existing Grafana setup
+- Model pre-loads at startup to avoid slow first request
+
+### How it Works
+
+- User sends a message
+- Backend checks the receiver's contentFilter setting in MongoDB
+- If enabled -> calls the moderation service with the message text
+- If confidence > 95% toxic -> replaces text with ******** before saving
+- If disabled or service unreachable -> message saves normally
+
+### How to Test
+
+- Train the model first: cd moderation-service && python app/train.py
+- Run docker compose up --build
+- Register two users
+- Enable content filter on the receiver's account (shield icon)
+- Send a toxic message from the sender. It should appear as ********
+- Send a normal message. It should go through unchanged.
+
+### Notes
+
+- Model is git-ignored (moderation-service/models/*.joblib) so each developer trains locally.
+- If the moderation service is unreachable, messages go through normally (fail-open)
+- Model accuracy: 95% overall, 84% recall on toxic messages
 
 ## Branch Strategy
 - `main` - stable production code
