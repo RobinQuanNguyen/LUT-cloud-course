@@ -81,6 +81,16 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  updateContentFilter: async (value) => {
+    try {
+      const res = await axiosInstance.patch("/auth/content-filter", { contentFilter: value });
+      set({ authUser: res.data });
+      toast.success(value ? "Parent mode enabled" : "Parent mode disabled");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Error updating content filter");
+    }
+  },
+
   connectSocket: () => {
     const { authUser, socket } = get();
 
