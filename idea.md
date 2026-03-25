@@ -1,27 +1,27 @@
 ## Tasks:
 1. ✅ Backend service: Implemented in Node.js/Bun.js/Deno with Express (or similar framework), handling API logic and authentication.
-2. ⏳(**Need to change from axois to nginx**) Frontend UI: Built using React, served via Nginx.
+2. ✅(**Need to change from axois to nginx**) Frontend UI: Built using React, served via Nginx.
 3. ✅(**Better to stay with MongoDB**) Database: A relational database (MySQL/PostgreSQL) to store user data and system information.
 4. ⏳(**Have to complete the whole task**) Processing microservice: A Python-based microservice performing some computational task (e.g., analytics, AI/ML, data processing, etc.).
 5. ✅ Authentication system: JWT-based authentication for secure user access.
-6. ⏳(**Have to complete the whole task**) Load balancing & reverse proxy: Using Traefik to distribute traVic across services.
-7. ⏳(**Have to complete the whole task**) Monitoring & logging: Implemented via Grafana, Loki & Prometheus.
-8. ⏳(**Quan: I have experience in this**) CI/CD pipeline: Automated deployment process using GitHub Actions.
-9. ⏳(**Have to complete the whole task**) Deployment & orchestration: The system must be containerized and deployed using Docker Swarm & Portainer.
-10. ⏳(**Have to complete the whole task - For security, we have Arcjet to protect use from DDOS and BOT**) HTTPS support & security
-
+6. ✅(**Have to complete the whole task**) Load balancing & reverse proxy: Using Traefik to distribute traVic across services.
+7. ✅(**Have to complete the whole task**) Monitoring & logging: Implemented via Grafana, Loki & Prometheus.
+8. ⏳(**Have to complete the whole task**) CI/CD pipeline: Automated deployment process using GitHub Actions.
+9. ⏳(**Have to complete the whole task**) Deployment & orchestration: The system must be containerized and deployed using Docker Swarm & Portainer. ([?] Use AWS EC2 then install docker swarm, and then deploy portainer on docker swarm (inside the virtual machine ec2) )
+10.⏳(**Have to complete the whole task - For security, we have Arcjet to protect use from DDOS and BOT**) HTTPS support & security
 ---
 ## Agenda:
 ### Sprint 1 (10/3 - 17/3. Next meeting: 17/3):
-- Task 2: Quan + prepare the doc
-- Task 6: Thet
-- Task 7: Thet
-- Task 10: Hung
+- Task 2: Quan + prepare the doc✅
+- Task 6: Thet✅
+- Task 7: Thet✅
+- Task 10: Hung⏳ Have to ask Hung
 
 ### Srpint 2:
 - Task 4. Idea:
-Each member implements their own microservices. Janne mentions that the microservices can be done in Python, Rust, or Go, and they should be related to calculation or analysis tasks.
-- Quan's proposal: A Python microservice to analyze the peak and low usage time of users. Or the "trending" keywords. The implementation should be done in the backend first, and there should be a separate UI (frontend) for the admin to view this data. Optional to show the users this data as well.
+Each member implements their own microservices. Janne mentions that the microservices can be done in Python, Rust, or Go, and they should be related to calculation or analysis tasks.✅
+- Quan's proposal: A Python microservice to analyze the peak and low usage time of users. Or the "trending" keywords. The implementation should be done in the backend first, and there should be a separate UI (frontend) for the admin to view this data. Optional to show the users this data as well.✅
+- Still pending ⏳
 
 ### Sprint 3:
 - Task 8, 9
@@ -30,7 +30,7 @@ Each member implements their own microservices. Janne mentions that the microser
 - Reserve for more functions, as Janne said, "Remember to make the project big enough, so you can justify that there has been enough work for everyone."
 
 ## Next deadline 🗓️:
-**15/3**: Send the project description for acceptance.
+**1/4**: Next meeting for sprint 3
 
 ---
 

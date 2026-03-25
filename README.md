@@ -58,7 +58,6 @@
 - MongoDB (for storing user's data and message): https://www.mongodb.com/
 - Cloudinary (for storing image): https://cloudinary.com/
 - Arcjet (for preventing DDOS and protect the app from bot): https://app.arcjet.com/
-- Sevalla (for deploying web application): https://app.sevalla.com/
 - prom-client (Prometheus metrics for Node.js): https://github.com/siimon/prom-client
 
 ### Frontend:
