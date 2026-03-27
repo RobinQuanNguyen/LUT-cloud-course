@@ -1,16 +1,16 @@
-# Traefik handels incoming traffic instead of containers directly
-# Reverse proxy that routes requests to the appropriate backend and frontend services based on the request path
 services:
+  # Traefik handles incoming traffic instead of containers directly
+  # Reverse proxy that routes requests to the appropriate backend and frontend services based on the request path
   traefik:
     image: traefik:v3.6.4
     container_name: lut-traefik
     ports:
       - "80:80"
       - "443:443"
-      - "8080:8080"  # Traefik dashboard
+      - "8080:8080" # Traefik dashboard
     volumes:
       - ./traefik.yml:/etc/traefik/traefik.yml:ro
-      - //var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - app_internal
     restart: unless-stopped
@@ -19,14 +19,16 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    container_name: lut-backend
     env_file:
       - ./backend/.env
     environment:
       RUN_PORT: 3001
       CLIENT_URL: http://localhost
-      ALLOWED_ORIGINS: http://localhost:8080,http://localhost:5173
+      ALLOWED_ORIGINS: http://localhost,http://localhost:5173,http://localhost:8080
       TRUST_PROXY: "true"
-      NODE_ENV: production
+      NODE_ENV: development
+      CHAT_SAFETY_SERVICE_URL: http://chat-safety-service:8000
     expose:
       - "3001"
     healthcheck:
@@ -34,12 +36,15 @@ services:
       interval: 30s
       timeout: 5s
       retries: 5
-    labels: # Traefik labels to route traffic to the backend service
+    labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=PathPrefix(`/api`) || PathPrefix(`/socket.io`) || PathPrefix(`/metrics`)"
       - "traefik.http.routers.backend.entrypoints=web"
-      - "traefik.http.routers.backend.priority=10"  
+      - "traefik.http.routers.backend.priority=10"
       - "traefik.http.services.backend.loadbalancer.server.port=3001"
+    depends_on:
+      chat-safety-service:
+        condition: service_started
     networks:
       - app_internal
     restart: unless-stopped
@@ -51,21 +56,45 @@ services:
     container_name: lut-frontend
     expose:
       - "80"
-    labels: # Traefik labels to route traffic to the frontend service
+    labels:
       - "traefik.enable=true"
       - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
       - "traefik.http.routers.frontend.entrypoints=web"
-      - "traefik.http.routers.frontend.priority=1"   # ← ADD THIS
+      - "traefik.http.routers.frontend.priority=1"
       - "traefik.http.services.frontend.loadbalancer.server.port=80"
     depends_on:
-      - backend:
+      backend:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
       interval: 30s
       timeout: 5s
       retries: 5
+    networks:
+      - app_internal
     restart: unless-stopped
+
+  chat-safety-service:
+    build:
+      context: ./chat-safety-service
+      dockerfile: Dockerfile
+    container_name: lut-chat-safety-service
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=lut-cloud-course_app_internal"
+      - "traefik.http.routers.chat-safety.rule=PathPrefix(`/chat-safety`)"
+      - "traefik.http.routers.chat-safety.entrypoints=web"
+      - "traefik.http.routers.chat-safety.priority=9"
+      - "traefik.http.routers.chat-safety.middlewares=chat-safety-strip"
+      - "traefik.http.middlewares.chat-safety-strip.stripprefix.prefixes=/chat-safety"
+      - "traefik.http.services.chat-safety.loadbalancer.server.port=8000"
     networks:
       - app_internal
     restart: unless-stopped
@@ -75,11 +104,11 @@ services:
     image: prom/prometheus:latest
     container_name: lut-prometheus
     command:
-    - '--config.file=/etc/prometheus/prometheus.yml'
-    - '--web.external-url=/prometheus'
-    - '--web.route-prefix=/prometheus'
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.external-url=/prometheus"
+      - "--web.route-prefix=/prometheus"
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus-data:/prometheus
     expose:
       - "9090"
@@ -96,10 +125,10 @@ services:
     image: grafana/grafana:latest
     container_name: lut-grafana
     environment:
-      - GF_SECURITY_ADMIN_PASSWORD=admin
-      - GF_USERS_ALLOW_SIGN_UP=false
-      - GF_SERVER_ROOT_URL=http://localhost/grafana
-      - GF_SERVER_SERVE_FROM_SUB_PATH=true
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: http://localhost/grafana
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
     volumes:
       - grafana-data:/var/lib/grafana
     expose:
@@ -122,18 +151,3 @@ networks:
 volumes:
   prometheus-data:
   grafana-data:
-
-      backend:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-    restart: unless-stopped
-    networks:
-      - app_internal
-
-networks:
-  app_internal:
-    driver: bridge

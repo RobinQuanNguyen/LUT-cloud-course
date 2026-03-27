@@ -4,14 +4,20 @@ http:
       headers:
         stsSeconds: 31536000
         stsIncludeSubdomains: true
+        stsPreload: true
+        forceSTSHeader: true
         browserXssFilter: true
         contentTypeNosniff: true
         frameDeny: true
         referrerPolicy: strict-origin-when-cross-origin
+        sslProxyHeaders:
+          X-Forwarded-Proto: https
         customResponseHeaders:
           Permissions-Policy: camera=(), microphone=(), geolocation=()
           Cross-Origin-Opener-Policy: same-origin
           Cross-Origin-Resource-Policy: same-site
+          Origin-Agent-Cluster: ?1
+          X-Permitted-Cross-Domain-Policies: none
     edge-ratelimit:
       rateLimit:
         average: 100
@@ -24,3 +30,16 @@ http:
           - secure-headers
           - edge-ratelimit
           - compress-all
+
+tls:
+  options:
+    default:
+      minVersion: VersionTLS12
+      sniStrict: true
+      cipherSuites:
+        - TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
+        - TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+        - TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305
+        - TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305

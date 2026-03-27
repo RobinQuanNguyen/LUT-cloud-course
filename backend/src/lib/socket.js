@@ -4,7 +4,7 @@ import express from "express";
 import { ENV } from "./env.js";
 import { socketAuthMiddleware } from "../middleware/socket.auth.middleware.js";
 
-const allowedOrigins = ENV.ALLOWED_ORIGINS;
+const allowedOrigins = new Set(ENV.ALLOWED_ORIGINS);
 
 const app = express();
 const server = http.createServer(app);
@@ -12,8 +12,17 @@ const server = http.createServer(app);
 const io = new Server(server, {
   serveClient: false,
   cors: {
-    origin: allowedOrigins,
+    origin: Array.from(allowedOrigins),
     credentials: true,
+  },
+  allowRequest: (req, callback) => {
+    const origin = req.headers.origin;
+
+    if (!origin || allowedOrigins.has(origin)) {
+      return callback(null, true);
+    }
+
+    return callback("Origin not allowed", false);
   },
 });
 

@@ -1,7 +1,3 @@
-api:
-  dashboard: true
-  insecure: true  # Fine for development
-
 entryPoints:
   web:
     address: ":80"
@@ -10,12 +6,13 @@ entryPoints:
 
 providers:
   docker:
-    endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
-    network: app-network
 
-metrics:
-  prometheus: {}
-  
+api:
+  dashboard: true
+  insecure: true
+
+accessLog: {}
+
 log:
   level: INFO

@@ -4,6 +4,12 @@ import { logger } from "../lib/logger.js";
 import { sanitizeValue } from "../lib/sanitize.js";
 
 const buildCsp = () => {
+  const connectSrc = ["'self'", "https:", "wss:"];
+
+  if (ENV.NODE_ENV !== "production") {
+    connectSrc.push("http:", "ws:");
+  }
+
   const directives = [
     "default-src 'self'",
     "base-uri 'self'",
@@ -14,7 +20,8 @@ const buildCsp = () => {
     "object-src 'none'",
     "script-src 'self'",
     "style-src 'self' 'unsafe-inline'",
-    "connect-src 'self' https: http: ws: wss:",
+    `connect-src ${connectSrc.join(" ")}`,
+    "upgrade-insecure-requests",
   ];
 
   return directives.join("; ");
@@ -27,13 +34,43 @@ export const securityHeaders = (req, res, next) => {
   res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
   res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
   res.setHeader("Cross-Origin-Resource-Policy", "same-site");
+  res.setHeader("Origin-Agent-Cluster", "?1");
+  res.setHeader("X-Permitted-Cross-Domain-Policies", "none");
   res.setHeader("Content-Security-Policy", buildCsp());
 
   if (ENV.NODE_ENV === "production") {
-    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+    res.setHeader("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+  }
+
+  if (req.path.startsWith("/api/auth")) {
+    res.setHeader("Cache-Control", "no-store");
   }
 
   next();
+};
+
+export const enforceHttps = (req, res, next) => {
+  if (ENV.NODE_ENV !== "production") {
+    return next();
+  }
+
+  const forwardedProto = req.headers["x-forwarded-proto"];
+  const isSecure = req.secure || forwardedProto === "https";
+
+  if (isSecure) {
+    return next();
+  }
+
+  const host = req.headers.host;
+  if (!host) {
+    return next(new AppError(400, "Host header is required"));
+  }
+
+  if (["GET", "HEAD"].includes(req.method)) {
+    return res.redirect(308, `https://${host}${req.originalUrl}`);
+  }
+
+  return next(new AppError(400, "HTTPS is required"));
 };
 
 export const requestLogger = (req, res, next) => {

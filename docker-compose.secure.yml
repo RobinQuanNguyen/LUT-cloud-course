@@ -13,6 +13,13 @@ services:
       - ./infra/traefik/dynamic:/etc/traefik/dynamic:ro
       - ./infra/traefik/acme.json:/acme.json
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
     networks:
       - edge
 
@@ -33,6 +40,10 @@ services:
     expose:
       - "3001"
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
     networks:
       - app_internal
 
@@ -52,9 +63,19 @@ services:
       - traefik.http.routers.chatify.entrypoints=websecure
       - traefik.http.routers.chatify.tls=true
       - traefik.http.routers.chatify.tls.certresolver=letsencrypt
+      - traefik.http.routers.chatify.tls.options=default@file
       - traefik.http.routers.chatify.middlewares=security-chain@file
       - traefik.http.services.chatify.loadbalancer.server.port=80
     restart: unless-stopped
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /var/cache/nginx
+      - /var/run
+      - /tmp
+    cap_drop:
+      - ALL
     networks:
       - edge
       - app_internal
