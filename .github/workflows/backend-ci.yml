@@ -1,0 +1,44 @@
+name: backend-ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci
+
+      - name: Start backend server
+        run: nohup npm start > backend.log 2>&1 &
+
+      - name: Wait for backend health check
+        run: |
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3001/health > /dev/null; then
+              exit 0
+            fi
+            sleep 5
+          done
+          cat backend.log
+          exit 1
+
+      - name: Run Jest endpoint tests
+        run: npm test
