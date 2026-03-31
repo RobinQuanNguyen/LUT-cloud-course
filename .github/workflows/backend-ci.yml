@@ -10,9 +10,15 @@ on:
 jobs:
   backend-tests:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
+    env:
+      CI: true
+      NODE_ENV: ${{ secrets.NODE_ENV || 'development' }}
+      MONGO_URI: ${{ secrets.MONGO_URI_FOR_TEST }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      RUN_PORT: ${{ secrets.RUN_PORT || '3001' }}
+      CLIENT_URL: http://localhost:5173
+      ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3001
+      API_BASE_URL: http://127.0.0.1:${{ secrets.RUN_PORT || '3001' }}
 
     steps:
       - uses: actions/checkout@v4
@@ -24,21 +30,17 @@ jobs:
           cache-dependency-path: backend/package-lock.json
 
       - name: Install backend dependencies
-        run: npm ci
+        run: npm ci --prefix backend
 
       - name: Start backend server
-        run: nohup npm start > backend.log 2>&1 &
+        run: npm start --prefix backend > backend.log 2>&1 &
 
-      - name: Wait for backend health check
-        run: |
-          for i in {1..30}; do
-            if curl -fsS http://127.0.0.1:3001/health > /dev/null; then
-              exit 0
-            fi
-            sleep 5
-          done
-          cat backend.log
-          exit 1
+      - name: Wait for backend to be ready
+        run: npx wait-on http://127.0.0.1:${RUN_PORT}/api/auth/test
 
       - name: Run Jest endpoint tests
-        run: npm test
+        run: npm test --prefix backend -- --runInBand
+
+      - name: Show backend logs on failure
+        if: failure()
+        run: cat backend.log
