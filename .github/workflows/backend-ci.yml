@@ -36,7 +36,7 @@ jobs:
         run: npm start --prefix backend > backend.log 2>&1 &
 
       - name: Wait for backend to be ready
-        run: npx --yes wait-on http://localhost/health
+        run: npx --yes wait-on http://127.0.0.1:${RUN_PORT}/health
 
       - name: Run Jest endpoint tests
         run: npm test --prefix backend -- --runInBand
