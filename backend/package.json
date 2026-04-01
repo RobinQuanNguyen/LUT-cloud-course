@@ -4,7 +4,11 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/server.js",
-    "start": "node src/server.js"
+    "start": "node src/server.js",
+    "test": "jest --runInBand src/tests/endpoint-health.test.js"
+  },
+  "jest": {
+    "testEnvironment": "node"
   },
   "keywords": [],
   "type": "module",
@@ -28,6 +32,7 @@
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
+    "jest": "^29.7.0",
     "nodemon": "^3.1.14"
   }
 }

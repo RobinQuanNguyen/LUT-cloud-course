@@ -1,0 +1,46 @@
+name: backend-ci
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  backend-tests:
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      NODE_ENV: ${{ secrets.NODE_ENV || 'development' }}
+      MONGO_URI: ${{ secrets.MONGO_URI }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      RUN_PORT: ${{ secrets.RUN_PORT || '3001' }}
+      CLIENT_URL: http://localhost:5173
+      ALLOWED_ORIGINS: http://localhost:5173,http://localhost:3001
+      API_BASE_URL: http://127.0.0.1:${{ secrets.RUN_PORT || '3001' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+
+      - name: Start backend server
+        run: npm start --prefix backend > backend.log 2>&1 &
+
+      - name: Wait for backend to be ready
+        run: npx --yes wait-on http://127.0.0.1:${RUN_PORT}/health
+
+      - name: Run Jest endpoint tests
+        run: npm test --prefix backend -- --runInBand
+
+      - name: Show backend logs on failure
+        if: failure()
+        run: cat backend.log
