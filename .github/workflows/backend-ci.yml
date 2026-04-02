@@ -6,6 +6,7 @@ on:
     branches:
       - main
       - master
+      - ci-setup
 
 jobs:
   backend-tests:
@@ -14,6 +15,7 @@ jobs:
       CI: true
       NODE_ENV: ${{ secrets.NODE_ENV || 'development' }}
       MONGO_URI: ${{ secrets.MONGO_URI }}
+      MONGO_URI_TEST: ${{ secrets.MONGO_URI_TEST }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
       RUN_PORT: ${{ secrets.RUN_PORT || '3001' }}
       CLIENT_URL: http://localhost:5173
