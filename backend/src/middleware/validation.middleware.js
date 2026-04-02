@@ -23,7 +23,7 @@ export const validateSignup = (req, res, next) => {
   try {
     const fullName = requireString(req.body.fullName, "Full name", 2, 80);
     const email = requireString(req.body.email, "Email", 5, 254).toLowerCase();
-    const password = requireString(req.body.password, "Password", 8, 72);
+    const password = requireString(req.body.password, "Password", 6, 72);
 
     if (!isEmail(email)) {
       throw new AppError(400, "Please provide a valid email address");
@@ -39,7 +39,7 @@ export const validateSignup = (req, res, next) => {
 export const validateLogin = (req, res, next) => {
   try {
     const email = requireString(req.body.email, "Email", 5, 254).toLowerCase();
-    const password = requireString(req.body.password, "Password", 8, 72);
+    const password = requireString(req.body.password, "Password", 6, 72);
 
     if (!isEmail(email)) {
       throw new AppError(400, "Please provide a valid email address");
