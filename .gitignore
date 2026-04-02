@@ -4,3 +4,5 @@ node_modules
 moderation-service/models/*
 moderation-service/app/__pycache__/*
 usage-analytics/__pycache__/*
+lut-key.pem
+*.pem

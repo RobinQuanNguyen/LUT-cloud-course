@@ -1,0 +1,140 @@
+version: "3.8"
+
+services:
+  traefik:
+    image: traefik:v3.6.4
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /home/ubuntu/app/traefik.swarm.yml:/etc/traefik/traefik.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:s
+      - app_network
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+      restart_policy:
+        condition: on-failure
+
+  backend:
+    image: capriz/lut-backend
+    env_file:
+      - /home/ubuntu/app/.env
+    environment:
+      RUN_PORT: 3001
+      CLIENT_URL: http://32.192.253.155
+      ALLOWED_ORIGINS: http://32.192.253.155
+      TRUST_PROXY: "true"
+      NODE_ENV: production
+    networks:
+      - app_network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.backend.rule=PathPrefix(`/api`) || PathPrefix(`/socket.io`) || PathPrefix(`/metrics`)"
+        - "traefik.http.routers.backend.entrypoints=web"
+        - "traefik.http.routers.backend.priority=10"
+        - "traefik.http.services.backend.loadbalancer.server.port=3001"
+
+  frontend:
+    image: capriz/lut-frontend
+    networks:
+      - app_network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+        - "traefik.http.routers.frontend.entrypoints=web"
+        - "traefik.http.routers.frontend.priority=1"
+        - "traefik.http.services.frontend.loadbalancer.server.port=80"
+
+  usage-analytics:
+    image: capriz/lut-usage-analytics
+    environment:
+      ANALYTICS_PORT: 8000
+    networks:
+      - app_network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.usage-analytics.rule=PathPrefix(`/usage-analytics`)"  
+        - "traefik.http.routers.usage-analytics.entrypoints=web"
+        - "traefik.http.routers.usage-analytics.priority=11"
+        - "traefik.http.services.usage-analytics.loadbalancer.server.port=8000"       
+
+  moderation-service:
+    image: capriz/lut-moderation-service
+    networks:
+      - app_network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.moderation.rule=PathPrefix(`/moderation`)"
+        - "traefik.http.routers.moderation.entrypoints=web"
+        - "traefik.http.routers.moderation.priority=20"
+        - "traefik.http.routers.moderation.middlewares=moderation-strip"
+        - "traefik.http.middlewares.moderation-strip.stripprefix.prefixes=/moderation"
+        - "traefik.http.services.moderation.loadbalancer.server.port=8000"
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.external-url=/prometheus"
+      - "--web.route-prefix=/prometheus"
+    volumes:
+      - /home/ubuntu/app/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml     
+      - prometheus-data:/prometheus
+    networks:
+      - app_network
+    deploy:
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.prometheus.rule=PathPrefix(`/prometheus`)"
+        - "traefik.http.routers.prometheus.entrypoints=web"
+        - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+
+  grafana:
+    image: grafana/grafana:latest
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SERVER_ROOT_URL: http://32.192.253.155/grafana
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    networks:
+      - app_network
+    deploy:
+      restart_policy:
+        condition: on-failure
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.grafana.rule=PathPrefix(`/grafana`)"
+        - "traefik.http.routers.grafana.entrypoints=web"
+        - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+
+networks:
+  app_network:
+    driver: overlay
+    attachable: true
+
+volumes:
+  prometheus-data:
+  grafana-data:
