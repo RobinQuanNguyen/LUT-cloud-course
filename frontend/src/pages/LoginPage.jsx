@@ -56,7 +56,7 @@ function LoginPage() {
                         placeholder="Enter your password"
                         autoComplete="current-password"
                         required
-                        minLength={8}
+                        minLength={6}
                         maxLength={72}
                       />
                     </div>
