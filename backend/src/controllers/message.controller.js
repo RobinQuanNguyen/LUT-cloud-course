@@ -3,6 +3,7 @@ import Message from "../models/Message.js";
 import User from "../models/User.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 import { AppError } from "../lib/errors.js";
+import { analyzeMessageRisk } from "../lib/chatSafety.js";
 
 export const getAllContacts = async (req, res, next) => {
   try {
@@ -60,11 +61,50 @@ export const sendMessage = async (req, res, next) => {
       imageUrl = uploadResponse.secure_url;
     }
 
+    const shouldAnalyzeText = typeof text === "string" && text.trim().length > 0;
+
+    let riskAnalysis = {
+      risk_score: 0,
+      risk_level: "low",
+      flags: [],
+      explanations: [],
+    };
+
+    if (shouldAnalyzeText) {
+      riskAnalysis = await analyzeMessageRisk({
+        messageId: null,
+        senderId: senderId.toString(),
+        text: text.trim(),
+      });
+      const blockedFlags = ["spam_detected", "phishing_suspected", "abusive_language"];
+      const shouldBlockMessage =
+        riskAnalysis.risk_level === "high" ||
+        riskAnalysis.flags.some((flag) => blockedFlags.includes(flag));
+
+      if (shouldBlockMessage) {
+        return res.status(400).json({
+          message: "Message blocked due to safety risk",
+          riskAnalysis: {
+            risk_score: riskAnalysis.risk_score,
+            risk_level: riskAnalysis.risk_level,
+            flags: riskAnalysis.flags,
+            explanations: riskAnalysis.explanations,
+          },
+        });
+      }
+    }
+
     const newMessage = await Message.create({
       senderId,
       receiverId,
       text,
       image: imageUrl,
+      riskAnalysis: {
+        risk_score: riskAnalysis.risk_score,
+        risk_level: riskAnalysis.risk_level,
+        flags: riskAnalysis.flags,
+        explanations: riskAnalysis.explanations,
+      },
     });
 
     const receiverSocketId = getReceiverSocketId(receiverId);

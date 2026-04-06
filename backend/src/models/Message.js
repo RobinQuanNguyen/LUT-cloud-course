@@ -25,6 +25,25 @@ const messageSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    riskAnalysis: {
+      risk_score: {
+        type: Number,
+        default: 0,
+      },
+      risk_level: {
+        type: String,
+        enum: ["low", "medium", "high"],
+        default: "low",
+      },
+      flags: {
+        type: [String],
+        default: [],
+      },
+      explanations: {
+        type: [String],
+        default: [],
+      },
+    },
   },
   {
     timestamps: true,
