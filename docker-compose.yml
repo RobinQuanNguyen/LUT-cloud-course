@@ -162,7 +162,7 @@ services:
     restart: unless-stopped
 
   loki:
-    image: grafana/loki:2.9.0
+    image: grafana/loki:3.0.0
     container_name: lut-loki
     command: -config.file=/etc/loki/local-config.yaml
     expose:
@@ -172,7 +172,7 @@ services:
     restart: unless-stopped
 
   promtail:
-    image: grafana/promtail:2.9.0
+    image: grafana/promtail:3.0.0
     container_name: lut-promtail
     command: -config.file=/etc/promtail/config.yml
     volumes:
