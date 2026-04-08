@@ -1,4 +1,36 @@
 {
+  "__inputs": [
+    {
+      "name": "DS_PROMETHEUS",
+      "label": "Prometheus",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "prometheus",
+      "pluginName": "Prometheus"
+    },
+    {
+      "name": "DS_LOKI",
+      "label": "Loki",
+      "description": "",
+      "type": "datasource",
+      "pluginId": "loki",
+      "pluginName": "Loki"
+    }
+  ],
+  "__requires": [
+    {
+      "type": "datasource",
+      "id": "prometheus",
+      "name": "Prometheus",
+      "version": "1.0.0"
+    },
+    {
+      "type": "datasource",
+      "id": "loki",
+      "name": "Loki",
+      "version": "1.0.0"
+    }
+  ],
   "annotations": {
     "list": [
       {
@@ -23,7 +55,7 @@
     {
       "datasource": {
         "type": "loki",
-        "uid": "afihk5hq8vs3kc"
+        "uid": "${DS_LOKI}"
       },
       "description": "Live logs from all our containers in one place!",
       "fieldConfig": {
@@ -52,7 +84,7 @@
         {
           "datasource": {
             "type": "loki",
-            "uid": "afihk5hq8vs3kc"
+            "uid": "${DS_LOKI}"
           },
           "direction": "backward",
           "editorMode": "code",
@@ -67,7 +99,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "afihc61oohou8f"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "How many active connections exist right now between clients and our server, including WebSocket connections.",
       "fieldConfig": {
@@ -106,9 +138,7 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -132,9 +162,9 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "afihc61oohou8f"
+        "uid": "${DS_PROMETHEUS}"
       },
-      "description": "The number of active resources Node.js is managing (timers, sockets, file handles). Normally stable but if there's a big increase, it means lots of connections.",
+      "description": "The number of active resources Node.js is managing (timers, sockets, file handles).",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -171,9 +201,7 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -197,9 +225,9 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "afihc61oohou8f"
+        "uid": "${DS_PROMETHEUS}"
       },
-      "description": "Breaks down responses by status code. 200 = success, 401 = unauthorized, 404 = not found, 302 = redirect. Good for spotting errors.",
+      "description": "Breaks down responses by status code. 200 = success, 401 = unauthorized, 404 = not found, 302 = redirect.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -288,9 +316,9 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "afihc61oohou8f"
+        "uid": "${DS_PROMETHEUS}"
       },
-      "description": "How delayed Node.js's event loop is. Normally near 0. If it spikes, it means our backend is busy/blocked and can't process requests fast enough.",
+      "description": "How delayed Node.js's event loop is. Normally near 0.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -383,9 +411,9 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "afihc61oohou8f"
+        "uid": "${DS_PROMETHEUS}"
       },
-      "description": "How many requests are coming in right now, per second. Spikes mean high traffic moments.",
+      "description": "How many requests are coming in right now, per second.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -478,9 +506,9 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "afihc61oohou8f"
+        "uid": "${DS_PROMETHEUS}"
       },
-      "description": "How much RAM our Node.js backend is currently using for its heap (where variables and objects live). If this keeps growing it means a memory leak.",
+      "description": "How much RAM our Node.js backend is currently using for its heap.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -518,9 +546,7 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -544,9 +570,9 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "afihc61oohou8f"
+        "uid": "${DS_PROMETHEUS}"
       },
-      "description": "How long it takes our server to respond to requests. Lower is better. Spikes mean our server is struggling.",
+      "description": "How long it takes our server to respond to requests. Lower is better.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -601,32 +627,7 @@
             ]
           }
         },
-        "overrides": [
-          {
-            "__systemRef": "hideSeriesFrom",
-            "matcher": {
-              "id": "byNames",
-              "options": {
-                "mode": "exclude",
-                "names": [
-                  "{code=\"0\", entrypoint=\"web\", instance=\"traefik:8080\", job=\"traefik\", method=\"GET\", protocol=\"websocket\"}"
-                ],
-                "prefix": "All except:",
-                "readOnly": true
-              }
-            },
-            "properties": [
-              {
-                "id": "custom.hideFrom",
-                "value": {
-                  "legend": false,
-                  "tooltip": true,
-                  "viz": true
-                }
-              }
-            ]
-          }
-        ]
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -664,7 +665,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "afihc61oohou8f"
+        "uid": "${DS_PROMETHEUS}"
       },
       "description": "The total number of HTTP requests that have hit our server since it started.",
       "fieldConfig": {
@@ -703,9 +704,7 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": ["lastNotNull"],
           "fields": "",
           "values": false
         },
@@ -718,7 +717,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "afihc61oohou8f"
+            "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
           "expr": "sum(traefik_entrypoint_requests_total)",
@@ -738,13 +737,13 @@
     "list": []
   },
   "time": {
-    "from": "2026-04-08T06:54:05.652Z",
-    "to": "2026-04-08T18:54:05.652Z"
+    "from": "now-6h",
+    "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "Chatify - Application Monitoring",
-  "uid": "ad7wc7d",
-  "version": 24,
+  "uid": "chatify-monitoring",
+  "version": 1,
   "weekStart": ""
 }

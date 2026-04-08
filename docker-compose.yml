@@ -122,6 +122,7 @@ services:
       GF_USERS_ALLOW_SIGN_UP: "false"
       GF_SERVER_ROOT_URL: http://localhost/grafana
       GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_DATASOURCES_DEFAULT_LOKI_URL: http://loki:3100
     volumes:
       - grafana-data:/var/lib/grafana
     expose:
@@ -156,6 +157,28 @@ services:
       - "traefik.http.routers.moderation.middlewares=moderation-strip"
       - "traefik.http.middlewares.moderation-strip.stripprefix.prefixes=/moderation"
       - "traefik.http.services.moderation.loadbalancer.server.port=8000"
+    networks:
+      - app_internal
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: lut-loki
+    command: -config.file=/etc/loki/local-config.yaml
+    expose:
+      - "3100"
+    networks:
+      - app_internal
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: lut-promtail
+    command: -config.file=/etc/promtail/config.yml
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail-config.yml:/etc/promtail/config.yml
     networks:
       - app_internal
     restart: unless-stopped
