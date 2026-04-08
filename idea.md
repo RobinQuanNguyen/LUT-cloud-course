@@ -2,13 +2,13 @@
 1. ✅ Backend service: Implemented in Node.js/Bun.js/Deno with Express (or similar framework), handling API logic and authentication.
 2. ✅(**Need to change from axois to nginx**) Frontend UI: Built using React, served via Nginx.
 3. ✅(**Better to stay with MongoDB**) Database: A relational database (MySQL/PostgreSQL) to store user data and system information.
-4. ⏳(**Have to complete the whole task**) Processing microservice: A Python-based microservice performing some computational task (e.g., analytics, AI/ML, data processing, etc.).
+4. ✅(**Have to complete the whole task**) Processing microservice: A Python-based microservice performing some computational task (e.g., analytics, AI/ML, data processing, etc.).
 5. ✅ Authentication system: JWT-based authentication for secure user access.
 6. ✅(**Have to complete the whole task**) Load balancing & reverse proxy: Using Traefik to distribute traVic across services.
 7. ✅(**Have to complete the whole task**) Monitoring & logging: Implemented via Grafana, Loki & Prometheus.
-8. ⏳(**Have to complete the whole task**) CI/CD pipeline: Automated deployment process using GitHub Actions.
+8. ✅(**Have to complete the whole task**) CI/CD pipeline: Automated deployment process using GitHub Actions.
 9. ⏳(**Have to complete the whole task**) Deployment & orchestration: The system must be containerized and deployed using Docker Swarm & Portainer. ([?] Use AWS EC2 then install docker swarm, and then deploy portainer on docker swarm (inside the virtual machine ec2) )
-10.⏳(**Have to complete the whole task - For security, we have Arcjet to protect use from DDOS and BOT**) HTTPS support & security
+10.✅(**Have to complete the whole task - For security, we have Arcjet to protect use from DDOS and BOT**) HTTPS support & security
 ---
 ## Agenda:
 ### Sprint 1 (10/3 - 17/3. Next meeting: 17/3):
