@@ -1,6 +1,6 @@
 # Docker Swarm & Portainer Deployment Guide
 
-A beginner-friendly guide to deploying the LUT Cloud Course app on AWS EC2 using Docker Swarm and Portainer.
+This is a thorough guide to deploying our Chatify app on AWS EC2 using Docker Swarm and Portainer.
 
 ---
 
@@ -45,7 +45,7 @@ AWS EC2 Instance (Ubuntu)
 - An AWS account (free tier works)
 - Docker Desktop installed locally
 - A DockerHub account (free at https://hub.docker.com)
-- Your `.pem` key file from AWS
+- `.pem` key file from AWS
 
 ---
 
