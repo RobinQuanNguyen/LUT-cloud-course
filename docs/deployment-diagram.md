@@ -103,7 +103,7 @@ flowchart TB
     traefik --> prometheus
     traefik --> grafana
 
-    frontend --> backend=
+    frontend --> backend
     backend --> mongo
     backend --> cloudinary
     backend --> moderation
