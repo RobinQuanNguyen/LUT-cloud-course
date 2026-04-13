@@ -4,11 +4,11 @@ This diagram illustrates the deployment setup used by the project, based on the 
 
 The main cloud-style deployment is described by:
 
-- [docker-compose.secure.yml](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\docker-compose.secure.yml)
-- [infra/traefik/traefik.yml](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\infra\traefik\traefik.yml)
-- [infra/traefik/dynamic/security.yml](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\infra\traefik\dynamic\security.yml)
+- [docker-compose.secure.yml](../docker-compose.secure.yml)
+- [infra/traefik/traefik.yml](../infra/traefik/traefik.yml)
+- [infra/traefik/dynamic/security.yml](../infra/traefik/dynamic/security.yml)
 
-The larger local/dev stack in [docker-compose.yml](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\docker-compose.yml) extends this with monitoring and logging services such as Prometheus, Grafana, Loki, and Promtail.
+The larger local/dev stack in [docker-compose.yml](../docker-compose.yml) extends this with monitoring and logging services such as Prometheus, Grafana, Loki, and Promtail.
 
 ## 1) Cloud Deployment Diagram
 

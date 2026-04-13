@@ -4,14 +4,14 @@ This guide combines the base setup information already present on `main` with th
 
 It was prepared by reviewing the setup-oriented documents and configuration files in this branch, especially:
 
-- [README.md](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\README.md)
-- [dockerswarm.md](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\dockerswarm.md)
-- [backend/README.md](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\backend\README.md)
-- [frontend/README.md](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\frontend\README.md)
-- [usage-analytics/instruction.md](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\usage-analytics\instruction.md)
-- [docker-compose.yml](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\docker-compose.yml)
-- [docker-compose.secure.yml](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\docker-compose.secure.yml)
-- [.github/workflows/backend-ci.yml](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\.github\workflows\backend-ci.yml)
+- [README.md](../README.md)
+- dockerswarm.md
+- [backend/README.md](../backend/README.md)
+- [frontend/README.md](../frontend/README.md)
+- [usage-analytics/instruction.md](../usage-analytics/instruction.md)
+- [docker-compose.yml](../docker-compose.yml)
+- [docker-compose.secure.yml](../docker-compose.secure.yml)
+- [.github/workflows/backend-ci.yml](../.github/workflows/backend-ci.yml)
 
 ## 1) Project Overview
 
@@ -57,7 +57,7 @@ git branch --show-current
 
 ## 4) Environment Configuration
 
-The backend relies on environment variables from [backend/.env](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\backend\.env).
+The backend relies on environment variables from a local `.env` file under `backend/`.
 
 At minimum, configure:
 
@@ -118,7 +118,7 @@ This creates:
 
 ## 6) Local Development Setup
 
-The easiest local setup is the full Docker Compose stack from [docker-compose.yml](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\docker-compose.yml).
+The easiest local setup is the full Docker Compose stack from [docker-compose.yml](../docker-compose.yml).
 
 Start the stack:
 
@@ -162,7 +162,7 @@ docker compose down -v
 
 ### Backend
 
-Backend scripts from [backend/package.json](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\backend\package.json):
+Backend scripts from [backend/package.json](../backend/package.json):
 
 ```bash
 cd backend
@@ -179,7 +179,7 @@ npm test
 
 ### Frontend
 
-Frontend scripts from [frontend/package.json](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\frontend\package.json):
+Frontend scripts from [frontend/package.json](../frontend/package.json):
 
 ```bash
 cd frontend
@@ -197,7 +197,7 @@ npm run lint
 
 ### Usage Analytics
 
-The service is primarily run through Docker Compose, but the API behavior is documented in [usage-analytics/instruction.md](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\usage-analytics\instruction.md).
+The service is primarily run through Docker Compose, but the API behavior is documented in [usage-analytics/instruction.md](../usage-analytics/instruction.md).
 
 Key endpoints:
 
@@ -206,7 +206,7 @@ Key endpoints:
 
 ## 8) Testing And CI
 
-The backend CI workflow is defined in [.github/workflows/backend-ci.yml](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\.github\workflows\backend-ci.yml).
+The backend CI workflow is defined in [.github/workflows/backend-ci.yml](../.github/workflows/backend-ci.yml).
 
 It currently:
 
@@ -231,7 +231,7 @@ To make tests succeed reliably, ensure:
 
 ## 9) Secure HTTPS Deployment
 
-This branch adds a more cloud-oriented deployment option via [docker-compose.secure.yml](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\docker-compose.secure.yml).
+This branch adds a more cloud-oriented deployment option via [docker-compose.secure.yml](../docker-compose.secure.yml).
 
 This setup uses:
 
@@ -239,7 +239,7 @@ This setup uses:
 - HTTPS on ports `80` and `443`
 - Let's Encrypt certificate resolver
 - an `edge` network and an `app_internal` network
-- security middleware from [infra/traefik/dynamic/security.yml](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\infra\traefik\dynamic\security.yml)
+- security middleware from [infra/traefik/dynamic/security.yml](../infra/traefik/dynamic/security.yml)
 
 Run the secure stack:
 
@@ -249,7 +249,7 @@ docker compose -f docker-compose.secure.yml up --build -d
 
 ## 10) Docker Swarm And Portainer Deployment
 
-This branch also includes a Docker Swarm deployment guide in [dockerswarm.md](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\dockerswarm.md).
+This branch also includes a Docker Swarm deployment guide in dockerswarm.md.
 
 Use that path when you need:
 
@@ -339,11 +339,11 @@ Check:
 
 For onboarding, read in this order:
 
-1. [README.md](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\README.md)
-2. [backend/README.md](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\backend\README.md)
-3. [frontend/README.md](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\frontend\README.md)
-4. [usage-analytics/instruction.md](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\usage-analytics\instruction.md)
-5. [dockerswarm.md](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\dockerswarm.md) for cloud deployment on this branch
+1. [README.md](../README.md)
+2. [backend/README.md](../backend/README.md)
+3. [frontend/README.md](../frontend/README.md)
+4. [usage-analytics/instruction.md](../usage-analytics/instruction.md)
+5. dockerswarm.md for cloud deployment on this branch
 
 ## 14) Branch-Specific Summary
 
@@ -352,6 +352,6 @@ Compared with `main`, this branch adds or emphasizes:
 - Docker Swarm and Portainer deployment guidance
 - AWS EC2 deployment workflow
 - HTTPS-focused secure Docker Compose setup
-- more architecture and documentation artifacts under [docs](C:\Cong Viec\Master's\Year 1\Cloud\LUT-cloud-course\docs)
+- more architecture and documentation artifacts under [docs](.)
 
 That makes this branch especially relevant for deployment, operations, and documentation work.
