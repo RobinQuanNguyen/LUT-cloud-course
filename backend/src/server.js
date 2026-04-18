@@ -1,5 +1,6 @@
 import express from "express";
 import path from "path";
+import { fileURLToPath } from "url";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import promClient from "prom-client";
@@ -20,7 +21,7 @@ import {
   securityHeaders,
 } from "./middleware/security.middleware.js";
 
-const __dirname = path.resolve();
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = ENV.RUN_PORT || 3001;
 
 if (ENV.TRUST_PROXY) {

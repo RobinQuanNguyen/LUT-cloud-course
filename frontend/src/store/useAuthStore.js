@@ -3,7 +3,8 @@ import { io } from "socket.io-client";
 import { toast } from "react-hot-toast";
 import { axiosInstance } from "../lib/axios.js";
 
-const socketUrl = import.meta.env.VITE_SOCKET_URL || (import.meta.env.MODE === "development" ? "http://localhost:3001" : "/");
+// Use relative path for Socket.IO - works with both localhost and Cloudflare tunnel
+const socketUrl = import.meta.env.VITE_SOCKET_URL || "/";
 
 export const useAuthStore = create((set, get) => ({
   authUser: null,

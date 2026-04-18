@@ -4,6 +4,8 @@ import User from "../models/User.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 import { AppError } from "../lib/errors.js";
 import { analyzeMessageRisk } from "../lib/chatSafety.js";
+import axios from "axios";
+import { ENV as env } from "../lib/env.js";
 
 export const getAllContacts = async (req, res, next) => {
   try {
@@ -110,6 +112,19 @@ export const sendMessage = async (req, res, next) => {
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", newMessage);
+    }
+
+    // Send analytics event (async, don't block response)
+    if (text && typeof text === "string" && text.trim().length > 0) {
+      const analyticsPayload = {
+        senderId: senderId.toString(),
+        receiverId: receiverId,
+        text: text.trim(),
+      };
+
+      axios
+        .post(`${env.CHAT_ANALYTICS_SERVICE_URL}/event/message`, analyticsPayload)
+        .catch((err) => console.error("Analytics service error:", err.message));
     }
 
     res.status(201).json({ message: "Message sent successfully", data: newMessage });

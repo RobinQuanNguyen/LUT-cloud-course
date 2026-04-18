@@ -1,6 +1,9 @@
 import axios from "axios";
 
-const baseURL = import.meta.env.VITE_API_BASE_URL || (import.meta.env.MODE === "development" ? "http://localhost:3001/api" : "/api");
+// Use relative path - Nginx/Reverse proxy handles routing
+// Production: /api -> backend
+// Development: Vite proxy handles /api -> backend
+const baseURL = import.meta.env.VITE_API_BASE_URL || "/api";
 
 export const axiosInstance = axios.create({
   baseURL,

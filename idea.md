@@ -499,4 +499,3 @@ In `docker-compose.yml`:
 - Update file: backend server entry (remove frontend static serving in production)
 
 Total: 4 files.
-

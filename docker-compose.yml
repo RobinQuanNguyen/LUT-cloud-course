@@ -1,6 +1,15 @@
 services:
-  # Traefik handles incoming traffic instead of containers directly
-  # Reverse proxy that routes requests to the appropriate backend and frontend services based on the request path
+  # Cloudflare Tunnel - COMMENTED OUT (đang dùng Windows Service)
+  # cloudflared:
+  #   image: cloudflare/cloudflared:latest
+  #   container_name: lut-cloudflared
+  #   command: tunnel --no-autoupdate run --token ${CLOUDFLARED_TOKEN}
+  #   restart: unless-stopped
+  #   networks:
+  #     - app_internal
+
+  # Traefik handles incoming traffic with HTTPS support
+  # Redirects HTTP to HTTPS and terminates SSL
   traefik:
     image: traefik:v3.6.4
     container_name: lut-traefik
@@ -9,7 +18,8 @@ services:
       - "443:443"
       - "8080:8080" # Traefik dashboard
     volumes:
-      - ./traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./infra/traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./infra/traefik/dynamic:/etc/traefik/dynamic:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks:
       - app_internal
@@ -25,10 +35,11 @@ services:
     environment:
       RUN_PORT: 3001
       CLIENT_URL: http://localhost
-      ALLOWED_ORIGINS: http://localhost,http://localhost:5173,http://localhost:8080
+      ALLOWED_ORIGINS: http://localhost,https://localhost,https://*.trycloudflare.com
       TRUST_PROXY: "true"
       NODE_ENV: development
       CHAT_SAFETY_SERVICE_URL: http://chat-safety-service:8000
+      CHAT_ANALYTICS_SERVICE_URL: http://chat-analytics-service:8001
     expose:
       - "3001"
     healthcheck:
@@ -95,6 +106,30 @@ services:
       - "traefik.http.routers.chat-safety.middlewares=chat-safety-strip"
       - "traefik.http.middlewares.chat-safety-strip.stripprefix.prefixes=/chat-safety"
       - "traefik.http.services.chat-safety.loadbalancer.server.port=8000"
+    networks:
+      - app_internal
+    restart: unless-stopped
+
+  # Task 4: Chat Analytics Microservice (Python)
+  chat-analytics-service:
+    build:
+      context: ./chat-analytics-service
+      dockerfile: Dockerfile
+    container_name: lut-chat-analytics-service
+    expose:
+      - "8001"
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health')\""]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=lut-cloud-course_app_internal"
+      - "traefik.http.routers.analytics.rule=PathPrefix(`/analytics`)"
+      - "traefik.http.routers.analytics.entrypoints=web"
+      - "traefik.http.routers.analytics.priority=8"
+      - "traefik.http.services.analytics.loadbalancer.server.port=8001"
     networks:
       - app_internal
     restart: unless-stopped

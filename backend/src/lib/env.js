@@ -18,7 +18,7 @@ const toList = (value, fallback = []) => {
     .filter(Boolean);
 };
 
-const defaultOrigins = ["http://localhost:8080", "http://localhost:5173"];
+const defaultOrigins = ["https://localhost:8080", "https://localhost:5173"];
 const configuredOrigins = toList(process.env.ALLOWED_ORIGINS || process.env.CLIENT_URL, defaultOrigins);
 
 export const ENV = {
@@ -45,4 +45,6 @@ export const ENV = {
   APP_DOMAIN: process.env.APP_DOMAIN || "",
   TLS_EMAIL: process.env.TLS_EMAIL || "",
   LOG_LEVEL: process.env.LOG_LEVEL || "info",
+  CHAT_SAFETY_SERVICE_URL: process.env.CHAT_SAFETY_SERVICE_URL || "http://chat-safety-service:8000",
+  CHAT_ANALYTICS_SERVICE_URL: process.env.CHAT_ANALYTICS_SERVICE_URL || "http://chat-analytics-service:8001",
 };

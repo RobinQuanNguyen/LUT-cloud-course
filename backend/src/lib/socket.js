@@ -1,12 +1,17 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
+import path from "path";
+import { fileURLToPath } from "url";
 import { ENV } from "./env.js";
 import { socketAuthMiddleware } from "../middleware/socket.auth.middleware.js";
 
 const allowedOrigins = new Set(ENV.ALLOWED_ORIGINS);
 
 const app = express();
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 const server = http.createServer(app);
 
 const io = new Server(server, {
