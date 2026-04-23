@@ -74,7 +74,7 @@ function SignUpPage() {
                         placeholder="Enter your password"
                         autoComplete="new-password"
                         required
-                        minLength={8}
+                        minLength={6}
                         maxLength={72}
                       />
                     </div>

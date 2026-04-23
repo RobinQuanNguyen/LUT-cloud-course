@@ -53,6 +53,23 @@ export const sendMessage = async (req, res, next) => {
       throw new AppError(404, "Receiver not found");
     }
 
+    // Moderate text before saving
+    let finalText = text;
+    if (text && text.trim()) {
+      try {
+        const receiver = await User.findById(receiverId).select("contentFilter");
+        if (receiver?.contentFilter === true) {
+          const modResult = await moderateText(text);
+          if (modResult.flagged) {
+            finalText = "********";
+          }
+        }
+      } catch (err) {
+        console.error("Content filter check failed:", err.message);
+        // save message as-is if check fails
+      }
+    }
+
     let imageUrl = "";
 
     if (image) {
@@ -99,7 +116,7 @@ export const sendMessage = async (req, res, next) => {
     const newMessage = await Message.create({
       senderId,
       receiverId,
-      text,
+      text: finalText,  // censored text if flagged
       image: imageUrl,
       riskAnalysis: {
         risk_score: riskAnalysis.risk_score,

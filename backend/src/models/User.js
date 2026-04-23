@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
+    contentFilter: {
+      type: Boolean,
+      default: false,  // off by default — users opt in
+    },
   },
   {
     timestamps: true,

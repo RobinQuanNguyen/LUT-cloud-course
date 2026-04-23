@@ -24,6 +24,7 @@ const configuredOrigins = toList(process.env.ALLOWED_ORIGINS || process.env.CLIE
 export const ENV = {
   RUN_PORT: toNumber(process.env.RUN_PORT, 3001),
   MONGO_URI: process.env.MONGO_URI,
+  MONGO_URI_TEST: process.env.MONGO_URI_TEST,
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN || "7d",
   JWT_COOKIE_NAME: process.env.JWT_COOKIE_NAME || "jwt",
