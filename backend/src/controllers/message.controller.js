@@ -4,6 +4,7 @@ import User from "../models/User.js";
 import { getReceiverSocketId, io } from "../lib/socket.js";
 import { AppError } from "../lib/errors.js";
 import { moderateText } from "../lib/moderation.js";
+import { analyzeSafety } from "../utils/analyzeSafety.js";
 
 export const getAllContacts = async (req, res, next) => {
   try {
@@ -51,20 +52,37 @@ export const sendMessage = async (req, res, next) => {
       throw new AppError(404, "Receiver not found");
     }
 
-    // Moderate text before saving
+    // Check content - toxic words replace, spam/phishing block
     let finalText = text;
     if (text && text.trim()) {
       try {
-        const receiver = await User.findById(receiverId).select("contentFilter");
-        if (receiver?.contentFilter === true) {
-          const modResult = await moderateText(text);
-          if (modResult.flagged) {
-            finalText = "********";
-          }
+        // Call both services in parallel
+        const [modResult, safetyResult] = await Promise.all([
+          moderateText(text),
+          analyzeSafety(text, null, senderId.toString()),
+        ]);
+
+        // Toxic words → replace with asterisks
+        if (modResult?.flagged) {
+          finalText = "********";
+          console.log("Message moderated (toxic words replaced)");
+        }
+
+        // Spam/Phishing detected → block the message
+        const hasSpam = safetyResult?.flags?.includes("spam_detected");
+        const hasPhishing = safetyResult?.flags?.includes("phishing_suspected");
+
+        if (hasSpam || hasPhishing) {
+          console.log("Message blocked (spam/phishing detected):", {
+            riskLevel: safetyResult.risk_level,
+            flags: safetyResult.flags,
+            explanations: safetyResult.explanations,
+          });
+          throw new AppError(400, "Message blocked due to suspicious content");
         }
       } catch (err) {
+        if (err instanceof AppError) throw err;
         console.error("Content filter check failed:", err.message);
-        // save message as-is if check fails
       }
     }
 

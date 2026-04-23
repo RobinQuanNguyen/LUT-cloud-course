@@ -34,7 +34,7 @@ services:
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3001/health"]
       interval: 30s
-      timeout: 5s
+      timeout: 10s
       retries: 5
     labels: # Traefik labels to route traffic to the backend service
       - "traefik.enable=true"
@@ -86,7 +86,7 @@ services:
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
       interval: 30s
-      timeout: 5s
+      timeout: 10s
       retries: 5
     networks:
       - app_internal
@@ -160,6 +160,62 @@ services:
       - app_internal
     restart: unless-stopped
 
+  # Task 8 - Chat Safety Service (risk analysis)
+  chat-safety-service:
+    build:
+      context: ./chat-safety-service
+      dockerfile: Dockerfile
+    container_name: lut-chat-safety-service
+    env_file:
+      - ./backend/.env
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chat-safety.rule=PathPrefix(`/risk`)"
+      - "traefik.http.routers.chat-safety.entrypoints=web"
+      - "traefik.http.routers.chat-safety.priority=20"
+      - "traefik.http.routers.chat-safety.middlewares=chat-safety-strip"
+      - "traefik.http.middlewares.chat-safety-strip.stripprefix.prefixes=/risk"
+      - "traefik.http.services.chat-safety.loadbalancer.server.port=8000"
+    networks:
+      - app_internal
+    restart: unless-stopped
+
+  # Task 8 - Chat Analytics Service
+  chat-analytics-service:
+    build:
+      context: ./chat-analytics-service
+      dockerfile: Dockerfile
+    container_name: lut-chat-analytics-service
+    env_file:
+      - ./backend/.env
+    environment:
+      SERVICE_PORT: 8001
+    expose:
+      - "8001"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.chat-analytics.rule=PathPrefix(`/analytics`)"
+      - "traefik.http.routers.chat-analytics.entrypoints=web"
+      - "traefik.http.routers.chat-analytics.priority=20"
+      - "traefik.http.routers.chat-analytics.middlewares=chat-analytics-strip"
+      - "traefik.http.middlewares.chat-analytics-strip.stripprefix.prefixes=/analytics"
+      - "traefik.http.services.chat-analytics.loadbalancer.server.port=8001"
+    networks:
+      - app_internal
+    restart: unless-stopped
+
 networks:
   app_internal:
     driver: bridge
@@ -167,5 +223,3 @@ networks:
 volumes:
   prometheus-data:
   grafana-data:
-
-    

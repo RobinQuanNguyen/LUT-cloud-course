@@ -11,9 +11,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt    
 
  # Copy code into the container
-COPY app/ ./app/     
-# Copy trained model into the container       
-COPY models/ ./models/       
+COPY app/ ./app/
 # Tell Docker this service listens on port 8000
 EXPOSE 8000                  
 
