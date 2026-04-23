@@ -1,0 +1,755 @@
+{
+  "scriptCompleted": true,
+  "name": "chatify-app",
+  "rawDescription": "",
+  "readmeHead": "<h1>Full-stack Chat Application</h1>\r\n\r\nFeature:\r\n- Custom JWT Authentication\r\n- Real-time Messaging via Socket.io\r\n- Online/Offline Presence Indicators\r\n- REST API with Node.js & Express\r\n- MongoDB for Data Persistence\r\n- API Rate-Limiting powered by Arcjet\r\n- Zustand for State Management\r",
+  "languages": [
+    "css",
+    "dockerfile",
+    "html",
+    "javascript",
+    "json",
+    "markdown",
+    "python",
+    "text",
+    "yaml"
+  ],
+  "frameworks": [
+    "Docker Compose",
+    "GitHub Actions",
+    "React"
+  ],
+  "files": [
+    {
+      "path": ".github/workflows/security.yml",
+      "language": "yaml",
+      "sizeLines": 52,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "backend/.dockerignore",
+      "language": "text",
+      "sizeLines": 6,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/cert.pfx",
+      "language": "text",
+      "sizeLines": 14,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/Dockerfile",
+      "language": "dockerfile",
+      "sizeLines": 13,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "backend/package.json",
+      "language": "json",
+      "sizeLines": 34,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/README.md",
+      "language": "markdown",
+      "sizeLines": 154,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "backend/src/controllers/auth.controller.js",
+      "language": "javascript",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/controllers/message.controller.js",
+      "language": "javascript",
+      "sizeLines": 160,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/lib/arcjet.js",
+      "language": "javascript",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/lib/chatSafety.js",
+      "language": "javascript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/lib/cloudinary.js",
+      "language": "javascript",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/lib/db.js",
+      "language": "javascript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/lib/env.js",
+      "language": "javascript",
+      "sizeLines": 50,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/lib/errors.js",
+      "language": "javascript",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/lib/logger.js",
+      "language": "javascript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/lib/sanitize.js",
+      "language": "javascript",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/lib/socket.js",
+      "language": "javascript",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/lib/utils.js",
+      "language": "javascript",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/middleware/arcjet.middleware.js",
+      "language": "javascript",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/middleware/auth.middleware.js",
+      "language": "javascript",
+      "sizeLines": 31,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/middleware/request-context.middleware.js",
+      "language": "javascript",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/middleware/security.middleware.js",
+      "language": "javascript",
+      "sizeLines": 160,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/middleware/socket.auth.middleware.js",
+      "language": "javascript",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/middleware/validation.middleware.js",
+      "language": "javascript",
+      "sizeLines": 116,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/models/Message.js",
+      "language": "javascript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/models/User.js",
+      "language": "javascript",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/routes/auth.route.js",
+      "language": "javascript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/routes/message.route.js",
+      "language": "javascript",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/server.js",
+      "language": "javascript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "chat-analytics-service/app/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "chat-analytics-service/app/config.py",
+      "language": "python",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "chat-analytics-service/app/main.py",
+      "language": "python",
+      "sizeLines": 352,
+      "fileCategory": "code"
+    },
+    {
+      "path": "chat-analytics-service/app/models.py",
+      "language": "python",
+      "sizeLines": 41,
+      "fileCategory": "code"
+    },
+    {
+      "path": "chat-analytics-service/Dockerfile",
+      "language": "dockerfile",
+      "sizeLines": 12,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "chat-analytics-service/README.md",
+      "language": "markdown",
+      "sizeLines": 311,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "chat-analytics-service/requirements.txt",
+      "language": "text",
+      "sizeLines": 6,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "chat-safety-service/app/__init__.py",
+      "language": "python",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "chat-safety-service/app/analyzer.py",
+      "language": "python",
+      "sizeLines": 284,
+      "fileCategory": "code"
+    },
+    {
+      "path": "chat-safety-service/app/config.py",
+      "language": "python",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "chat-safety-service/app/main.py",
+      "language": "python",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "chat-safety-service/app/models.py",
+      "language": "python",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "chat-safety-service/Dockerfile",
+      "language": "dockerfile",
+      "sizeLines": 15,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "chat-safety-service/requirements.txt",
+      "language": "text",
+      "sizeLines": 3,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "docker-compose.secure.yml",
+      "language": "yaml",
+      "sizeLines": 87,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "docker-compose.yml",
+      "language": "yaml",
+      "sizeLines": 188,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "frontend/.dockerignore",
+      "language": "text",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/Dockerfile",
+      "language": "dockerfile",
+      "sizeLines": 11,
+      "fileCategory": "infra"
+    },
+    {
+      "path": "frontend/eslint.config.js",
+      "language": "javascript",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/index.html",
+      "language": "html",
+      "sizeLines": 14,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "frontend/nginx.conf",
+      "language": "text",
+      "sizeLines": 81,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/package.json",
+      "language": "json",
+      "sizeLines": 39,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/postcss.config.js",
+      "language": "javascript",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/README.md",
+      "language": "markdown",
+      "sizeLines": 228,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "frontend/src/App.jsx",
+      "language": "javascript",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/ActiveTabSwitch.jsx",
+      "language": "javascript",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/BorderAnimatedContainer.jsx",
+      "language": "javascript",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/ChatContainer.jsx",
+      "language": "javascript",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/ChatHeader.jsx",
+      "language": "javascript",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/ChatList.jsx",
+      "language": "javascript",
+      "sizeLines": 49,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/ContactList.jsx",
+      "language": "javascript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/MessageInput.jsx",
+      "language": "javascript",
+      "sizeLines": 129,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/MessageLoadingSkeleton.jsx",
+      "language": "javascript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/NoChatHistoryPlaceholder.jsx",
+      "language": "javascript",
+      "sizeLines": 33,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/NoChatsFound.jsx",
+      "language": "javascript",
+      "sizeLines": 27,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/NoConversationPlaceHolder.jsx",
+      "language": "javascript",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/PageLoader.jsx",
+      "language": "javascript",
+      "sizeLines": 11,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/ProfileHeader.jsx",
+      "language": "javascript",
+      "sizeLines": 92,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/components/UserLoadingSkeleton.jsx",
+      "language": "javascript",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/hooks/useKeyboardSounds.js",
+      "language": "javascript",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "language": "css",
+      "sizeLines": 35,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "frontend/src/lib/axios.js",
+      "language": "javascript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/main.jsx",
+      "language": "javascript",
+      "sizeLines": 15,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/pages/ChatPage.jsx",
+      "language": "javascript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/pages/LoginPage.jsx",
+      "language": "javascript",
+      "sizeLines": 98,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/pages/SignUpPage.jsx",
+      "language": "javascript",
+      "sizeLines": 116,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/store/useAuthStore.js",
+      "language": "javascript",
+      "sizeLines": 124,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/store/useChatStore.js",
+      "language": "javascript",
+      "sizeLines": 142,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tailwind.config.js",
+      "language": "javascript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/vite.config.js",
+      "language": "javascript",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "idea.md",
+      "language": "markdown",
+      "sizeLines": 502,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "infra/traefik/acme.json",
+      "language": "json",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "infra/traefik/dynamic/security.yml",
+      "language": "yaml",
+      "sizeLines": 45,
+      "fileCategory": "config"
+    },
+    {
+      "path": "infra/traefik/traefik.yml",
+      "language": "yaml",
+      "sizeLines": 21,
+      "fileCategory": "config"
+    },
+    {
+      "path": "monitoring/prometheus.yml",
+      "language": "yaml",
+      "sizeLines": 13,
+      "fileCategory": "config"
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "sizeLines": 20,
+      "fileCategory": "config"
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "sizeLines": 83,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "traefik.yml",
+      "language": "yaml",
+      "sizeLines": 18,
+      "fileCategory": "config"
+    }
+  ],
+  "totalFiles": 87,
+  "estimatedComplexity": "moderate",
+  "importMap": {
+    ".github/workflows/security.yml": [],
+    "backend/.dockerignore": [],
+    "backend/cert.pfx": [],
+    "backend/Dockerfile": [],
+    "backend/package.json": [],
+    "backend/README.md": [],
+    "backend/src/controllers/auth.controller.js": [
+      "backend/src/lib/cloudinary.js",
+      "backend/src/models/User.js",
+      "backend/src/lib/utils.js",
+      "backend/src/lib/errors.js"
+    ],
+    "backend/src/controllers/message.controller.js": [
+      "backend/src/lib/cloudinary.js",
+      "backend/src/models/Message.js",
+      "backend/src/models/User.js",
+      "backend/src/lib/socket.js",
+      "backend/src/lib/errors.js",
+      "backend/src/lib/chatSafety.js",
+      "backend/src/lib/env.js"
+    ],
+    "backend/src/lib/arcjet.js": [
+      "backend/src/lib/env.js"
+    ],
+    "backend/src/lib/chatSafety.js": [],
+    "backend/src/lib/cloudinary.js": [
+      "backend/src/lib/env.js"
+    ],
+    "backend/src/lib/db.js": [
+      "backend/src/lib/env.js",
+      "backend/src/lib/logger.js"
+    ],
+    "backend/src/lib/env.js": [],
+    "backend/src/lib/errors.js": [],
+    "backend/src/lib/logger.js": [],
+    "backend/src/lib/sanitize.js": [],
+    "backend/src/lib/socket.js": [
+      "backend/src/lib/env.js",
+      "backend/src/middleware/socket.auth.middleware.js"
+    ],
+    "backend/src/lib/utils.js": [
+      "backend/src/lib/env.js"
+    ],
+    "backend/src/middleware/arcjet.middleware.js": [
+      "backend/src/lib/arcjet.js",
+      "backend/src/lib/errors.js"
+    ],
+    "backend/src/middleware/auth.middleware.js": [
+      "backend/src/models/User.js",
+      "backend/src/lib/env.js",
+      "backend/src/lib/errors.js"
+    ],
+    "backend/src/middleware/request-context.middleware.js": [],
+    "backend/src/middleware/security.middleware.js": [
+      "backend/src/lib/env.js",
+      "backend/src/lib/errors.js",
+      "backend/src/lib/logger.js",
+      "backend/src/lib/sanitize.js"
+    ],
+    "backend/src/middleware/socket.auth.middleware.js": [
+      "backend/src/models/User.js",
+      "backend/src/lib/env.js"
+    ],
+    "backend/src/middleware/validation.middleware.js": [
+      "backend/src/lib/errors.js",
+      "backend/src/lib/env.js",
+      "backend/src/lib/sanitize.js"
+    ],
+    "backend/src/models/Message.js": [],
+    "backend/src/models/User.js": [],
+    "backend/src/routes/auth.route.js": [
+      "backend/src/controllers/auth.controller.js",
+      "backend/src/middleware/auth.middleware.js",
+      "backend/src/middleware/arcjet.middleware.js",
+      "backend/src/middleware/validation.middleware.js"
+    ],
+    "backend/src/routes/message.route.js": [
+      "backend/src/controllers/message.controller.js",
+      "backend/src/middleware/auth.middleware.js",
+      "backend/src/middleware/arcjet.middleware.js",
+      "backend/src/middleware/validation.middleware.js"
+    ],
+    "backend/src/server.js": [
+      "backend/src/routes/auth.route.js",
+      "backend/src/routes/message.route.js",
+      "backend/src/lib/db.js",
+      "backend/src/lib/env.js",
+      "backend/src/lib/socket.js",
+      "backend/src/middleware/request-context.middleware.js"
+    ],
+    "chat-analytics-service/app/__init__.py": [],
+    "chat-analytics-service/app/config.py": [],
+    "chat-analytics-service/app/main.py": [],
+    "chat-analytics-service/app/models.py": [],
+    "chat-analytics-service/Dockerfile": [],
+    "chat-analytics-service/README.md": [],
+    "chat-analytics-service/requirements.txt": [],
+    "chat-safety-service/app/__init__.py": [],
+    "chat-safety-service/app/analyzer.py": [],
+    "chat-safety-service/app/config.py": [],
+    "chat-safety-service/app/main.py": [],
+    "chat-safety-service/app/models.py": [],
+    "chat-safety-service/Dockerfile": [],
+    "chat-safety-service/requirements.txt": [],
+    "docker-compose.secure.yml": [],
+    "docker-compose.yml": [],
+    "frontend/.dockerignore": [],
+    "frontend/Dockerfile": [],
+    "frontend/eslint.config.js": [],
+    "frontend/index.html": [],
+    "frontend/nginx.conf": [],
+    "frontend/package.json": [],
+    "frontend/postcss.config.js": [],
+    "frontend/README.md": [],
+    "frontend/src/App.jsx": [
+      "frontend/src/pages/ChatPage.jsx",
+      "frontend/src/pages/LoginPage.jsx",
+      "frontend/src/pages/SignUpPage.jsx",
+      "frontend/src/store/useAuthStore.js",
+      "frontend/src/components/PageLoader.jsx"
+    ],
+    "frontend/src/components/ActiveTabSwitch.jsx": [
+      "frontend/src/store/useChatStore.js"
+    ],
+    "frontend/src/components/BorderAnimatedContainer.jsx": [],
+    "frontend/src/components/ChatContainer.jsx": [
+      "frontend/src/store/useChatStore.js",
+      "frontend/src/store/useAuthStore.js",
+      "frontend/src/components/ChatHeader.jsx",
+      "frontend/src/components/NoChatHistoryPlaceholder.jsx",
+      "frontend/src/components/MessageInput.jsx",
+      "frontend/src/components/MessageLoadingSkeleton.jsx"
+    ],
+    "frontend/src/components/ChatHeader.jsx": [
+      "frontend/src/store/useChatStore.js",
+      "frontend/src/store/useAuthStore.js"
+    ],
+    "frontend/src/components/ChatList.jsx": [
+      "frontend/src/store/useChatStore.js",
+      "frontend/src/components/NoChatsFound.jsx",
+      "frontend/src/components/UserLoadingSkeleton.jsx",
+      "frontend/src/store/useAuthStore.js"
+    ],
+    "frontend/src/components/ContactList.jsx": [
+      "frontend/src/store/useChatStore.js",
+      "frontend/src/components/UserLoadingSkeleton.jsx",
+      "frontend/src/store/useAuthStore.js"
+    ],
+    "frontend/src/components/MessageInput.jsx": [
+      "frontend/src/hooks/useKeyboardSounds.js",
+      "frontend/src/store/useChatStore.js"
+    ],
+    "frontend/src/components/MessageLoadingSkeleton.jsx": [],
+    "frontend/src/components/NoChatHistoryPlaceholder.jsx": [],
+    "frontend/src/components/NoChatsFound.jsx": [
+      "frontend/src/store/useChatStore.js"
+    ],
+    "frontend/src/components/NoConversationPlaceHolder.jsx": [],
+    "frontend/src/components/PageLoader.jsx": [],
+    "frontend/src/components/ProfileHeader.jsx": [
+      "frontend/src/store/useAuthStore.js",
+      "frontend/src/store/useChatStore.js"
+    ],
+    "frontend/src/components/UserLoadingSkeleton.jsx": [],
+    "frontend/src/hooks/useKeyboardSounds.js": [],
+    "frontend/src/index.css": [],
+    "frontend/src/lib/axios.js": [],
+    "frontend/src/main.jsx": [
+      "frontend/src/App.jsx"
+    ],
+    "frontend/src/pages/ChatPage.jsx": [
+      "frontend/src/store/useChatStore.js",
+      "frontend/src/components/BorderAnimatedContainer.jsx",
+      "frontend/src/components/ProfileHeader.jsx",
+      "frontend/src/components/ActiveTabSwitch.jsx",
+      "frontend/src/components/ChatList.jsx",
+      "frontend/src/components/ContactList.jsx",
+      "frontend/src/components/ChatContainer.jsx",
+      "frontend/src/components/NoConversationPlaceHolder.jsx"
+    ],
+    "frontend/src/pages/LoginPage.jsx": [
+      "frontend/src/components/BorderAnimatedContainer.jsx",
+      "frontend/src/store/useAuthStore.js"
+    ],
+    "frontend/src/pages/SignUpPage.jsx": [
+      "frontend/src/components/BorderAnimatedContainer.jsx",
+      "frontend/src/store/useAuthStore.js"
+    ],
+    "frontend/src/store/useAuthStore.js": [
+      "frontend/src/lib/axios.js"
+    ],
+    "frontend/src/store/useChatStore.js": [
+      "frontend/src/lib/axios.js",
+      "frontend/src/store/useAuthStore.js"
+    ],
+    "frontend/tailwind.config.js": [],
+    "frontend/vite.config.js": [],
+    "idea.md": [],
+    "infra/traefik/acme.json": [],
+    "infra/traefik/dynamic/security.yml": [],
+    "infra/traefik/traefik.yml": [],
+    "monitoring/prometheus.yml": [],
+    "package.json": [],
+    "README.md": [],
+    "traefik.yml": []
+  }
+}
