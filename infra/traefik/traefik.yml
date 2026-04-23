@@ -13,7 +13,8 @@ providers:
     watch: true
 
 api:
-  dashboard: false
+  dashboard: true
+  insecure: true
 
 accessLog: {}
 log:

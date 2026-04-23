@@ -35,7 +35,7 @@ services:
     environment:
       RUN_PORT: 3001
       CLIENT_URL: http://localhost
-      ALLOWED_ORIGINS: http://localhost,https://localhost,https://*.trycloudflare.com
+      ALLOWED_ORIGINS: http://localhost,http://localhost:5173,https://localhost,https://*.trycloudflare.com
       TRUST_PROXY: "true"
       NODE_ENV: development
       CHAT_SAFETY_SERVICE_URL: http://chat-safety-service:8000
@@ -57,6 +57,51 @@ services:
     depends_on:
       chat-safety-service:
         condition: service_started
+      chat-analytics-service:
+        condition: service_started
+    networks:
+      - app_internal
+    restart: unless-stopped
+
+  chat-safety-service:
+    build:
+      context: ./chat-safety-service
+      dockerfile: Dockerfile
+    container_name: lut-chat-safety-service
+    environment:
+      SERVICE_NAME: chat-safety-service
+      SERVICE_VERSION: "1.0.0"
+      MAX_TEXT_LENGTH: "5000"
+    expose:
+      - "8000"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app_internal
+    restart: unless-stopped
+
+  chat-analytics-service:
+    build:
+      context: ./chat-analytics-service
+      dockerfile: Dockerfile
+    container_name: lut-chat-analytics-service
+    environment:
+      SERVICE_NAME: chat-analytics-service
+      SERVICE_VERSION: "1.0.0"
+      SERVICE_PORT: 8001
+      ANALYTICS_DB_URI: mongodb://mongodb:27017
+      ANALYTICS_DB_NAME: chat_analytics
+      LOG_LEVEL: info
+    expose:
+      - "8001"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:8001/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
     networks:
       - app_internal
     restart: unless-stopped
