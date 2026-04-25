@@ -1,4 +1,7 @@
-<h1>Full-stack Chat Application</h1>
+<h1>Chatify - Full-stack Chat Application</h1>\
+Our project, Chatify, is a real-time chat application built with microservices, deployed on AWS EC2 using Docker Swarm. This project was built as part of the Cloud Services & Infrastructure course at LUT University.
+
+Live: https://lut-chatify.duckdns.org
 
 ## Feature:
 - Custom JWT Authentication
@@ -11,13 +14,16 @@
 - Deployment with Sevalla
 - Reverse Proxy & Load Balancing with Traefik
 - Monitoring & Metrics with Prometheus & Grafana
+- Log aggregation with Loki & Promtail
 - AI-powered Content Moderation microservice (Python/FastAPI)
+- Spam & Phishing detection microservice (Python/FastAPI)
+- Usage analytics microservice (Python/FastAPI)
+- Chat analytics microservice (Python/FastAPI)
 - Per-user content filter toggle
 - Containerized deployment with Docker Swarm & Portainer on AWS EC2
+- CI/CD pipeline with GitHub Actions
 
-## Upcoming feature:
-- CI/CD using Github Action
-- HTTPS support
+## Possible features for future development:
 - (Front-end) Indicators for unseen message
 - (Front-end) New features for chat container.
 
@@ -27,17 +33,19 @@
 - **Frontend**: React, served via Nginx
 - **Backend**: Node.js/Express, JWT auth, Socket.io
 - **Database**: MongoDB (Atlas)
-- **Moderation microservice**: Python/FastAPI, scikit-learn ML model
-- **Usage analytics microservice**: Python/FastAPI, usage pattern analysis
+- **Moderation microservice**: Python/FastAPI, scikit-learn ML model to detect toxic content
+- **Chat safety microservice**: Python/FastAPI to detect spam and phishing
+- **Usage analytics microservice**: Python/FastAPI, usage pattern analysis for analyzing peak usage hours
+- **Chat analytics microservice**: Python/FastAPI for conversation-level analytics
 - **Reverse proxy**: Traefik (routes all traffic, handles load balancing)
-- **Monitoring**: Prometheus + Grafana at `/prometheus` and `/grafana`
+- **Monitoring**: Prometheus + Grafana + Loki + Promtail
 - **Deployment**: Docker Swarm on AWS EC2, managed via Portainer Dashboard
  
 ```
                         ┌──────────────────┐
                         │     Traefik      │
                         │  (Reverse Proxy) │
-                        │   :80, :443      │
+                        │  :80 :443 :8080  │
                         └────────┬─────────┘
                                  │
          ┌───────────────────────┼────────────────────────┐
@@ -45,19 +53,31 @@
   ┌──────▼───────┐       ┌───────▼──────┐         ┌───────▼──────┐
   │   Frontend   │       │   Backend    │         │  Prometheus  │
   │    (Nginx)   │       │  (Node.js)   │         │  + Grafana   │
-  │     :80      │       │    :3001     │         │  Monitoring  │
+  │     :80      │       │    :3001     │         │  + Loki      │
   └──────────────┘       └──────┬───────┘         └──────────────┘
                                 │
-           ┌────────────────────┼──────────────────────┐
-           │                    │                      │
-   ┌───────▼──────┐   ┌─────────▼────────┐  ┌──────────▼─────────┐
-   │   MongoDB    │   │   Moderation     │  │  Usage Analytics   │
-   │   (Atlas)    │   │   microservice   │  │   microservice     │
-   └──────────────┘   │ (Python/FastAPI) │  │  (Python/FastAPI)  │
-                      └──────────────────┘  └────────────────────┘
+      ┌─────────────────────────┼──────────────────────────┐
+      │                         │                          │
+┌─────▼──────┐      ┌───────────▼────────┐   ┌─────────────▼────────────┐
+│  MongoDB   │      │   Moderation +     │   │  Usage Analytics +       │
+│  (Atlas)   │      │   Chat Safety      │   │  Chat Analytics          │
+└────────────┘      │  (Python/FastAPI)  │   │  (Python/FastAPI)        │
+                    └────────────────────┘   └──────────────────────────┘
 
 All services run inside Docker Swarm on AWS EC2, managed via Portainer.
+
 ```
+| Service | URL |
+|---|---|
+| App (Frontend) | https://lut-chatify.duckdns.org |
+| Grafana | https://lut-chatify.duckdns.org/grafana |
+| Prometheus | https://lut-chatify.duckdns.org/prometheus |
+| Usage Analytics | https://lut-chatify.duckdns.org/usage-analytics/summary |
+| Traefik Dashboard | https://lut-chatify.duckdns.org:8080 |
+| Portainer | https://lut-chatify.duckdns.org:9000 |
+ 
+For a full step-by-step deployment guide, see [docs/docker-swarm.md](docs/docker-swarm.md).
+
 
 ## Resources:
 ### Backend:
@@ -77,6 +97,7 @@ All services run inside Docker Swarm on AWS EC2, managed via Portainer.
 - Traefik (reverse proxy & load balancing): https://traefik.io/
 - Prometheus (metrics collection): https://prometheus.io/
 - Grafana (metrics visualization): https://grafana.com/
+- Loki: https://grafana.com/oss/loki/
 - Docker Swarm (container orchestration): https://docs.docker.com/engine/swarm/
 - Portainer (Docker management UI): https://www.portainer.io/
 - AWS EC2 (cloud server): https://aws.amazon.com/ec2/
@@ -90,22 +111,35 @@ All services run inside Docker Swarm on AWS EC2, managed via Portainer.
 
 ## Local Development Setup
 
-### Backend (`/backend`)
-### .env setup
+### 1. Clone the repository
+ 
 ```bash
-PORT=3000
+git clone https://github.com/RobinQuanNguyen/LUT-cloud-course.git
+cd LUT-cloud-course
+```
+
+### 2. Configure environment variables
+ 
+Create `backend/.env`:
+ 
+```bash
+RUN_PORT=3001
 MONGO_URI=your_mongo_uri_here
+MONGO_URI_TEST=your_test_mongo_uri_here
 NODE_ENV=development
 JWT_SECRET=your_jwt_secret
-CLIENT_URL=http://localhost:5173
+CLIENT_URL=http://localhost
+ALLOWED_ORIGINS=http://localhost,http://localhost:5173
 CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
 ARCJET_KEY=your_arcjet_key
 ARCJET_ENV=development
 ```
-### Moderation microservice (`/moderation-service`)
-Prerequisites: train the model first.
+
+### 3. Train the moderation model (one-time setup)
+**Moderation microservice (`/moderation-service`)**
+
 
 The service requires a pre-trained model file. Run this once before starting the stack:
 ```bash
@@ -125,71 +159,44 @@ python app/train.py
 This downloads the dataset automatically and saves the model to `moderation-service/models/moderation_model.joblib`.
 
 ---
-## Run Locally:
 
-1. Have your Docker desktop ready. Make sure it's running.
-2. Start all services from the project root `/LUT-cloud-course`:
-
-    ```bash
-    docker compose up --build -d
-    ```
-
-3. Access the application:
-   
-   | Service | URL |
-    |---|---|
-    | App (Frontend) | http://localhost |
-    | Traefik Dashboard | http://localhost:8080 |
-    | Prometheus | http://localhost/prometheus |
-    | Grafana | http://localhost/grafana|
-    | Usage Analytics UI | http://localhost/usage-analytics |
-    | Moderation API | http://localhost/moderation/health |
-
-4. View logs:
-   ```bash
-   docker compose logs -f frontend
-   docker compose logs -f backend
-   docker compose logs -f moderation-service
-   ```
-   
-5. Scale backend for load balancing:
-    ```bash
-        docker compose up --scale backend=3 -d
-    ```
-
-7. Stop all:
-    ```bash
-    docker compose down
-    ```
-
-    (Optional) Stop and remove volumes (if DB volumes added):
-    ```bash
-    docker compose down -v
-    ```
-
-## Cloud Deployment (AWS EC2 + Docker Swarm)
+### 4. Start all services
  
-The app is deployed on AWS EC2 using Docker Swarm for orchestration and Portainer for management.
- 
-**Live URLs:**
+```bash
+docker compose up --build -d
+```
+### 5. Access the application
  
 | Service | URL |
 |---|---|
-| App (Frontend) | http://32.192.253.155 |
-| Grafana | http://32.192.253.155/grafana |
-| Prometheus | http://32.192.253.155/prometheus |
-| Traefik Dashboard | http://32.192.253.155:8080 |
-| Portainer | http://32.192.253.155:9000 |
+| App (Frontend) | http://localhost |
+| Traefik Dashboard | http://localhost:8080 |
+| Grafana | http://localhost/grafana |
+| Prometheus | http://localhost/prometheus |
+| Usage Analytics | http://localhost/usage-analytics/summary |
+| Moderation health | http://localhost/moderation/health |
+| Chat Safety health | http://localhost/risk/health |
+| Chat Analytics health | http://localhost/analytics/health |
+
+### 6. Useful commands
  
-For a full step-by-step guide on how the deployment was set up, see [docs/docker-swarm.md](docs/docker-swarm.md).
+```bash
+# View logs
+docker compose logs -f backend
+docker compose logs -f moderation-service
  
-**Key files:**
-- `docker-stack.yml` — Swarm-compatible deployment config (used on EC2)
-- `traefik.swarm.yml` — Traefik config for Swarm (uses `providers.swarm`)
-- `docker-compose.yml` — Local development config
-- `traefik.yml` — Traefik config for local development (uses `providers.docker`)
+# Scale backend for load balancing testing
+docker compose up --scale backend=3 -d
+ 
+# Stop all services
+docker compose down
+ 
+# Stop and remove volumes
+docker compose down -v
+```
  
 ---
+
 
 ## Moderation-service
 
@@ -201,10 +208,11 @@ For a full step-by-step guide on how the deployment was set up, see [docs/docker
 ### How it Works
 
 - User sends a message
-- Backend checks the receiver's contentFilter setting in MongoDB
-- If enabled -> calls the moderation service with the message text
-- If confidence > 95% toxic -> replaces text with ******** before saving
-- If disabled or service unreachable -> message saves normally
+- Backend calls moderation service and chat safety service in parallel
+- If toxic (confidence > 95%) → message replaced with `********`
+- If spam or phishing detected → message blocked entirely
+- If services are unreachable → message goes through normally (fail-open)
+
 
 ### How to Test
 
@@ -215,17 +223,37 @@ For a full step-by-step guide on how the deployment was set up, see [docs/docker
 - Send a toxic message from the sender. It should appear as ********
 - Send a normal message. It should go through unchanged.
 
-### Notes
 
-- Model is git-ignored (moderation-service/models/*.joblib) so each developer trains locally.
-- If the moderation service is unreachable, messages go through normally (fail-open)
-- Model accuracy: 95% overall, 84% recall on toxic messages
+---
+
+
+## Key Deployment Files
+ 
+| File | Purpose |
+|---|---|
+| `docker-compose.yml` | Local development |
+| `docker-stack.yml` | Cloud deployment (Docker Swarm on EC2) |
+| `traefik.yml` | Traefik config for local (`providers.docker`) |
+| `traefik.swarm.yml` | Traefik config for cloud (`providers.swarm` + HTTPS) |
+| `promtail-config.yml` | Log collection config for Loki |
+| `monitoring/prometheus.yml` | Prometheus scrape config |
+| `monitoring/grafana-dashboard.json` | Exportable Grafana dashboard |
+| `docs/docker-swarm.md` | Step-by-step EC2 deployment guide |
+
 
 ## Branch Strategy
 | Branch | Purpose |
 |---|---|
 | `main` | Stable production code |
+| `feat/integrated-with-swarm` | All services integrated + Docker Swarm + HTTPS + Loki |
 | `feat/docker-swarm-portainer` | Docker Swarm & Portainer deployment (Task 9) |
 | `hungle-dev` | HTTPS support & security (Task 10) |
 | `feature/traefik` | Traefik + monitoring (Task 6 & 7) |
 | `microservice/content-moderation` | ML-powered moderation microservice (Task 4) |
+| `feature/integrate-services` | Teammate microservices integration |
+ 
+### Additional Notes
+
+- Model is git-ignored (moderation-service/models/*.joblib) so each developer trains locally.
+- If the moderation service is unreachable, messages go through normally (fail-open)
+- Model accuracy: 95% overall, 84% recall on toxic messages
