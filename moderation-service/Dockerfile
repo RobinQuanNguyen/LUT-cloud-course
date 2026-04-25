@@ -1,14 +1,20 @@
 # Start from an existing Python image
 # (like a pre-installed OS with Python ready)
-FROM python:3.11-slim        
+# Use slim base instead of full to reduce image size
+FROM python:3.11-slim   
     
 # All following commands run inside /app folder
 WORKDIR /app                 
 
+# Install system deps needed by scikit-learn/numpy
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy requirements file into the container
 COPY requirements.txt .  
-# Install all necessary Python packages    
-RUN pip install --no-cache-dir -r requirements.txt    
+# Install only what's needed, no cache
+RUN pip install --no-cache-dir -r requirements.txt   
 
  # Copy code into the container
 COPY app/ ./app/

@@ -13,9 +13,11 @@
 - Monitoring & Metrics with Prometheus & Grafana
 - AI-powered Content Moderation microservice (Python/FastAPI)
 - Per-user content filter toggle
+- Containerized deployment with Docker Swarm & Portainer on AWS EC2
 
 ## Upcoming feature:
 - CI/CD using Github Action
+- HTTPS support
 - (Front-end) Indicators for unseen message
 - (Front-end) New features for chat container.
 
@@ -26,8 +28,10 @@
 - **Backend**: Node.js/Express, JWT auth, Socket.io
 - **Database**: MongoDB (Atlas)
 - **Moderation microservice**: Python/FastAPI, scikit-learn ML model
+- **Usage analytics microservice**: Python/FastAPI, usage pattern analysis
 - **Reverse proxy**: Traefik (routes all traffic, handles load balancing)
 - **Monitoring**: Prometheus + Grafana at `/prometheus` and `/grafana`
+- **Deployment**: Docker Swarm on AWS EC2, managed via Portainer Dashboard
  
 ```
                         ┌──────────────────┐
@@ -36,21 +40,23 @@
                         │   :80, :443      │
                         └────────┬─────────┘
                                  │
-              ┌──────────────────┼─────────────────┐
-              │                  │                 │
-       ┌──────▼───────┐   ┌──────▼──────┐   ┌──────▼───────┐
-       │   Frontend   │   │   Backend   │   │  Prometheus  │
-       │    (Nginx)   │   │  (Node.js)  │   │  + Grafana   │
-       │     :80      │   │    :3001    │   │  Monitoring  │
-       └──────────────┘   └──────┬──────┘   └──────────────┘
-                                 │
-                ┌────────────────┴──────────────────┐
-                │                                   │
-        ┌───────▼──────┐                  ┌─────────▼────────┐
-        │   MongoDB    │                  │   Moderation     │
-        │   (Atlas)    │                  │   microservice   │
-        └──────────────┘                  │ (Python/FastAPI) │
-                                          └──────────────────┘
+         ┌───────────────────────┼────────────────────────┐
+         │                       │                        │
+  ┌──────▼───────┐       ┌───────▼──────┐         ┌───────▼──────┐
+  │   Frontend   │       │   Backend    │         │  Prometheus  │
+  │    (Nginx)   │       │  (Node.js)   │         │  + Grafana   │
+  │     :80      │       │    :3001     │         │  Monitoring  │
+  └──────────────┘       └──────┬───────┘         └──────────────┘
+                                │
+           ┌────────────────────┼──────────────────────┐
+           │                    │                      │
+   ┌───────▼──────┐   ┌─────────▼────────┐  ┌──────────▼─────────┐
+   │   MongoDB    │   │   Moderation     │  │  Usage Analytics   │
+   │   (Atlas)    │   │   microservice   │  │   microservice     │
+   └──────────────┘   │ (Python/FastAPI) │  │  (Python/FastAPI)  │
+                      └──────────────────┘  └────────────────────┘
+
+All services run inside Docker Swarm on AWS EC2, managed via Portainer.
 ```
 
 ## Resources:
@@ -71,31 +77,30 @@
 - Traefik (reverse proxy & load balancing): https://traefik.io/
 - Prometheus (metrics collection): https://prometheus.io/
 - Grafana (metrics visualization): https://grafana.com/
+- Docker Swarm (container orchestration): https://docs.docker.com/engine/swarm/
+- Portainer (Docker management UI): https://www.portainer.io/
+- AWS EC2 (cloud server): https://aws.amazon.com/ec2/
 
 ### Moderation microservice
 - FASTAPI: https://fastapi.tiangolo.com/
 - scikit-learn: https://scikit-learn.org/
 - Dataset (Jigsaw Toxic Comments): https://huggingface.co/datasets/thesofakillers/jigsaw-toxic-comment-classification-challenge
+
 ---
 
-## Setup before running the application
+## Local Development Setup
 
 ### Backend (`/backend`)
 ### .env setup
 ```bash
 PORT=3000
 MONGO_URI=your_mongo_uri_here
-
 NODE_ENV=development
-
 JWT_SECRET=your_jwt_secret
-
-CLIENT_URL=http://localhost:5173 (if you have a URL from Sevalla, replace the localhost with it)
-
+CLIENT_URL=http://localhost:5173
 CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
 CLOUDINARY_API_KEY=your_cloudinary_api_key
 CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-
 ARCJET_KEY=your_arcjet_key
 ARCJET_ENV=development
 ```
@@ -120,7 +125,7 @@ python app/train.py
 This downloads the dataset automatically and saves the model to `moderation-service/models/moderation_model.joblib`.
 
 ---
-## Run Commands:
+## Run Locally:
 
 1. Have your Docker desktop ready. Make sure it's running.
 2. Start all services from the project root `/LUT-cloud-course`:
@@ -137,17 +142,17 @@ This downloads the dataset automatically and saves the model to `moderation-serv
     | Traefik Dashboard | http://localhost:8080 |
     | Prometheus | http://localhost/prometheus |
     | Grafana | http://localhost/grafana|
-    | Message Monitoring UI | http://localhost/monitoring |
+    | Usage Analytics UI | http://localhost/usage-analytics |
     | Moderation API | http://localhost/moderation/health |
 
-5. View logs:
+4. View logs:
    ```bash
    docker compose logs -f frontend
    docker compose logs -f backend
    docker compose logs -f moderation-service
    ```
    
-6. Scale backend for load balancing:
+5. Scale backend for load balancing:
     ```bash
         docker compose up --scale backend=3 -d
     ```
@@ -161,6 +166,30 @@ This downloads the dataset automatically and saves the model to `moderation-serv
     ```bash
     docker compose down -v
     ```
+
+## Cloud Deployment (AWS EC2 + Docker Swarm)
+ 
+The app is deployed on AWS EC2 using Docker Swarm for orchestration and Portainer for management.
+ 
+**Live URLs:**
+ 
+| Service | URL |
+|---|---|
+| App (Frontend) | http://32.192.253.155 |
+| Grafana | http://32.192.253.155/grafana |
+| Prometheus | http://32.192.253.155/prometheus |
+| Traefik Dashboard | http://32.192.253.155:8080 |
+| Portainer | http://32.192.253.155:9000 |
+ 
+For a full step-by-step guide on how the deployment was set up, see [docs/docker-swarm.md](docs/docker-swarm.md).
+ 
+**Key files:**
+- `docker-stack.yml` — Swarm-compatible deployment config (used on EC2)
+- `traefik.swarm.yml` — Traefik config for Swarm (uses `providers.swarm`)
+- `docker-compose.yml` — Local development config
+- `traefik.yml` — Traefik config for local development (uses `providers.docker`)
+ 
+---
 
 ## Moderation-service
 
@@ -193,7 +222,10 @@ This downloads the dataset automatically and saves the model to `moderation-serv
 - Model accuracy: 95% overall, 84% recall on toxic messages
 
 ## Branch Strategy
-- `main` - stable production code
-- `hungle-dev` - HTTPS support & security (Task 10)
-- `feature/traefik` - Traefik + monitoring (Task 6 & 7)
-- `microservice/content-moderation` - ML-powered moderation microservice (Task 4)
+| Branch | Purpose |
+|---|---|
+| `main` | Stable production code |
+| `feat/docker-swarm-portainer` | Docker Swarm & Portainer deployment (Task 9) |
+| `hungle-dev` | HTTPS support & security (Task 10) |
+| `feature/traefik` | Traefik + monitoring (Task 6 & 7) |
+| `microservice/content-moderation` | ML-powered moderation microservice (Task 4) |
