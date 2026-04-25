@@ -3222,19 +3222,22 @@ See [API Documentation](docs/api-documentation.md).
 ## 12.3 Example Folder Structure
 
 ```text
-chatify/
-├── backend/
-├── frontend/
-├── services/
-│   ├── moderation-service/
-│   ├── safety-service/
-│   └── analytics-service/
-├── docs/
-│   └── api-documentation.md
-├── docker-compose.yml
-└── README.md
+.
+├── backend/                    # Main Node.js + Express backend API
+├── frontend/                   # React frontend application
+├── chat-analytics-service/     # Chat analytics microservice
+├── chat-safety-service/        # Message safety/risk analysis microservice
+├── moderation-service/         # Content moderation microservice
+├── usage-analytics/            # Usage analytics service
+├── infra/                      # Infrastructure-related configuration
+├── monitoring/                 # Monitoring configuration such as Prometheus, Grafana, or logging tools
+├── docker-compose.yml          # Main Docker Compose setup
+├── docker-compose.secure.yml   # Secure Docker Compose setup
+├── docker-stack.yml            # Docker Swarm stack configuration
+├── traefik.yml                 # Traefik reverse proxy configuration
+├── traefik.swarm.yml           # Traefik configuration for Docker Swarm
+├── promtail-config.yml         # Promtail logging configuration
+├── package.json                # Root-level package configuration
+├── package-lock.json           # Dependency lock file
+└── README.md                   # Main project documentation
 ```
-
----
-
-# End of Document
