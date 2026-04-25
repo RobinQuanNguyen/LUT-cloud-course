@@ -1,25 +1,46 @@
-import joblib
-import numpy as np
+import re
 
-_model = None   # Lazy loading: model only gets loaded into memory first time someone calls
+TOXIC_WORDS = {
+    "fuck", "f*ck", "fuk", "phuck",
+    "shit", "sh*t", "sht",
+    "damn", "dam", "dmn",
+    "ass", "a$$", "azz",
+    "bitch", "b*tch", "btch", "b1tch",
+    "bastard", "bstard",
+    "dick", "d*ck", "d1ck",
+    "pussy", "p*ss", "puss",
+    "cunt",
+    "whore", "w*hore",
+    "slut",
+    "nigger", "nigga", "n1gger",
+    "faggot", "f*ggot",
+    "retard", "r*tard",
+    "idiot", "i*iot",
+    "stupid",
+    "moron",
+    "loser",
+    "dumb"
+}
 
 def load_model():
-    global _model
-    if _model is None:
-        print("Loading model into memory...")
-        _model = joblib.load("models/moderation_model.joblib")
-    return _model
+    return None
 
-def predict(texts: str) -> dict:
-    model = load_model()
-    label = model.predict([texts])[0]
-    probability = model.predict_proba([texts])[0] # [prob_safe, prob_toxic]
+def predict(text: str) -> dict:
+    text_lower = text.lower()
+    words = re.findall(r'\b\w+\b', text_lower)
 
-    return {
-        "label": "toxic" if label == 1 else "safe",
-        "confidence": float(np.max(probability)),
-        "scores": {
-            "safe": float(probability[0]),
-            "toxic": float(probability[1])
+    toxic_count = sum(1 for word in words if word in TOXIC_WORDS)
+
+    if toxic_count == 0:
+        return {
+            "label": "safe",
+            "confidence": 0.95,
+            "scores": {"safe": 0.95, "toxic": 0.05}
         }
-    }
+    else:
+        confidence = min(0.5 + (toxic_count * 0.15), 0.95)
+        return {
+            "label": "toxic",
+            "confidence": float(confidence),
+            "scores": {"safe": 1 - confidence, "toxic": confidence}
+        }

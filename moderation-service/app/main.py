@@ -34,7 +34,7 @@ class ModerationResponse(BaseModel):
     scores: dict # {"safe": 0.12, "toxic": 0.88}
     flagged: bool # True if content is flagged as toxic AND confidence > threshold
 
-THRESHOLD = 0.95 # Flag as toxic if model is >95% sure that it's toxic
+THRESHOLD = 0.5 # Flag as toxic if model is >50% sure that it's toxic
 
 @app.get("/health")
 def health_check():
