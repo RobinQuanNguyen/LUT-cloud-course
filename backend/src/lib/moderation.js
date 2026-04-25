@@ -1,5 +1,5 @@
 // helper file for content moderation (python microservice)
-const MODERATION_URL = "http://lut-moderation-service:8000/moderate";
+const MODERATION_URL = "http://moderation-service:8000/moderate";
 
 export const moderateText = async (text) => {
     try {

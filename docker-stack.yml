@@ -10,6 +10,7 @@ services:
     volumes:
       - /home/ubuntu/app/traefik.swarm.yml:/etc/traefik/traefik.yml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - letsencrypt:/letsencrypt
     networks:
       - app_network
     deploy:
@@ -29,8 +30,8 @@ services:
       - /home/ubuntu/app/.env
     environment:
       RUN_PORT: 3001
-      CLIENT_URL: http://100.55.100.27
-      ALLOWED_ORIGINS: http://100.55.100.27
+      CLIENT_URL: https://lut-chatify.duckdns.org
+      ALLOWED_ORIGINS: https://lut-chatify.duckdns.org
       TRUST_PROXY: "true"
       NODE_ENV: production
     networks:
@@ -46,8 +47,10 @@ services:
           memory: 128M
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.backend.rule=PathPrefix(`/api`) || PathPrefix(`/socket.io`) || PathPrefix(`/metrics`)"
-        - "traefik.http.routers.backend.entrypoints=web"
+        - "traefik.http.routers.backend.rule=Host(`lut-chatify.duckdns.org`) && (PathPrefix(`/api`) || PathPrefix(`/socket.io`) || PathPrefix(`/metrics`))"
+        - "traefik.http.routers.backend.entrypoints=websecure"
+        - "traefik.http.routers.backend.tls=true"
+        - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
         - "traefik.http.routers.backend.priority=10"
         - "traefik.http.services.backend.loadbalancer.server.port=3001"
 
@@ -66,8 +69,10 @@ services:
           memory: 32M
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
-        - "traefik.http.routers.frontend.entrypoints=web"
+        - "traefik.http.routers.frontend.rule=Host(`lut-chatify.duckdns.org`) && PathPrefix(`/`)"
+        - "traefik.http.routers.frontend.entrypoints=websecure"
+        - "traefik.http.routers.frontend.tls=true"
+        - "traefik.http.routers.frontend.tls.certresolver=letsencrypt"
         - "traefik.http.routers.frontend.priority=1"
         - "traefik.http.services.frontend.loadbalancer.server.port=80"
 
@@ -90,10 +95,66 @@ services:
           memory: 100M
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.usage-analytics.rule=PathPrefix(`/usage-analytics`)"
-        - "traefik.http.routers.usage-analytics.entrypoints=web"
+        - "traefik.http.routers.usage-analytics.rule=Host(`lut-chatify.duckdns.org`) && PathPrefix(`/usage-analytics`)"
+        - "traefik.http.routers.usage-analytics.entrypoints=websecure"
+        - "traefik.http.routers.usage-analytics.tls=true"
+        - "traefik.http.routers.usage-analytics.tls.certresolver=letsencrypt"
         - "traefik.http.routers.usage-analytics.priority=11"
         - "traefik.http.services.usage-analytics.loadbalancer.server.port=8000"
+
+  chat-safety-service:
+    image: capriz/lut-chat-safety-service
+    env_file:
+      - /home/ubuntu/app/.env
+    networks:
+      - app_network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          memory: 200M
+        reservations:
+          memory: 100M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.chat-safety.rule=Host(`lut-chatify.duckdns.org`) && PathPrefix(`/risk`)"
+        - "traefik.http.routers.chat-safety.entrypoints=websecure"
+        - "traefik.http.routers.chat-safety.tls=true"
+        - "traefik.http.routers.chat-safety.tls.certresolver=letsencrypt"
+        - "traefik.http.routers.chat-safety.priority=20"
+        - "traefik.http.routers.chat-safety.middlewares=chat-safety-strip"
+        - "traefik.http.middlewares.chat-safety-strip.stripprefix.prefixes=/risk"
+        - "traefik.http.services.chat-safety.loadbalancer.server.port=8000"
+
+  chat-analytics-service:
+    image: capriz/lut-chat-analytics-service
+    env_file:
+      - /home/ubuntu/app/.env
+    environment:
+      SERVICE_PORT: 8001
+    networks:
+      - app_network
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+      resources:
+        limits:
+          memory: 200M
+        reservations:
+          memory: 100M
+      labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.chat-analytics.rule=Host(`lut-chatify.duckdns.org`) && PathPrefix(`/analytics`)"
+        - "traefik.http.routers.chat-analytics.entrypoints=websecure"
+        - "traefik.http.routers.chat-analytics.tls=true"
+        - "traefik.http.routers.chat-analytics.tls.certresolver=letsencrypt"
+        - "traefik.http.routers.chat-analytics.priority=20"
+        - "traefik.http.routers.chat-analytics.middlewares=chat-analytics-strip"
+        - "traefik.http.middlewares.chat-analytics-strip.stripprefix.prefixes=/analytics"
+        - "traefik.http.services.chat-analytics.loadbalancer.server.port=8001"
 
   moderation-service:
     image: capriz/lut-moderation-service
@@ -110,8 +171,10 @@ services:
           memory: 100M
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.moderation.rule=PathPrefix(`/moderation`)"
-        - "traefik.http.routers.moderation.entrypoints=web"
+        - "traefik.http.routers.moderation.rule=Host(`lut-chatify.duckdns.org`) && PathPrefix(`/moderation`)"
+        - "traefik.http.routers.moderation.entrypoints=websecure"
+        - "traefik.http.routers.moderation.tls=true"
+        - "traefik.http.routers.moderation.tls.certresolver=letsencrypt"
         - "traefik.http.routers.moderation.priority=20"
         - "traefik.http.routers.moderation.middlewares=moderation-strip"
         - "traefik.http.middlewares.moderation-strip.stripprefix.prefixes=/moderation"
@@ -138,8 +201,10 @@ services:
           memory: 64M
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.prometheus.rule=PathPrefix(`/prometheus`)"
-        - "traefik.http.routers.prometheus.entrypoints=web"
+        - "traefik.http.routers.prometheus.rule=Host(`lut-chatify.duckdns.org`) && PathPrefix(`/prometheus`)"
+        - "traefik.http.routers.prometheus.entrypoints=websecure"
+        - "traefik.http.routers.prometheus.tls=true"
+        - "traefik.http.routers.prometheus.tls.certresolver=letsencrypt"
         - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
 
   grafana:
@@ -147,7 +212,7 @@ services:
     environment:
       GF_SECURITY_ADMIN_PASSWORD: admin
       GF_USERS_ALLOW_SIGN_UP: "false"
-      GF_SERVER_ROOT_URL: http://100.55.100.27/grafana
+      GF_SERVER_ROOT_URL: https://lut-chatify.duckdns.org/grafana
       GF_SERVER_SERVE_FROM_SUB_PATH: "true"
     volumes:
       - grafana-data:/var/lib/grafana
@@ -163,8 +228,10 @@ services:
           memory: 64M
       labels:
         - "traefik.enable=true"
-        - "traefik.http.routers.grafana.rule=PathPrefix(`/grafana`)"
-        - "traefik.http.routers.grafana.entrypoints=web"
+        - "traefik.http.routers.grafana.rule=Host(`lut-chatify.duckdns.org`) && PathPrefix(`/grafana`)"
+        - "traefik.http.routers.grafana.entrypoints=websecure"
+        - "traefik.http.routers.grafana.tls=true"
+        - "traefik.http.routers.grafana.tls.certresolver=letsencrypt"
         - "traefik.http.services.grafana.loadbalancer.server.port=3000"
 
   loki:
@@ -213,3 +280,4 @@ networks:
 volumes:
   prometheus-data:
   grafana-data:
+  letsencrypt:
