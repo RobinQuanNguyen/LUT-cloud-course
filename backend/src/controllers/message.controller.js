@@ -33,7 +33,51 @@ export const getMessagesByUserId = async (req, res, next) => {
         { senderId: myId, receiverId: userToChatId },
         { senderId: userToChatId, receiverId: myId },
       ],
-    }).sort({ createdAt: 1 });
+    })
+      .populate("senderId", "fullName profilePic")
+      .sort({ createdAt: 1 });
+
+    // Get filter settings for both current user and chat partner
+    const currentUser = await User.findById(myId).select("contentFilter");
+    const chatPartner = await User.findById(userToChatId).select("contentFilter");
+
+    // Helper to censor text if toxic
+    const censorIfToxic = async (textToCheck) => {
+      if (!textToCheck || !textToCheck.trim()) return textToCheck;
+      try {
+        const modResult = await moderateText(textToCheck);
+        return modResult?.flagged ? "********" : textToCheck;
+      } catch {
+        return textToCheck;
+      }
+    };
+
+    // For each message, check if it should be censored based on sender/receiver filter
+    for (let i = 0; i < messages.length; i++) {
+      const msg = messages[i];
+      const senderId = msg.senderId._id?.toString() || msg.senderId.toString();
+      const receiverId = msg.receiverId._id ? msg.receiverId._id.toString() : msg.receiverId.toString();
+      const isSentByMe = senderId === myId.toString();
+
+      // Get sender's filter setting
+      let senderHasFilter = false;
+      if (isSentByMe) {
+        senderHasFilter = currentUser?.contentFilter || false;
+      } else {
+        senderHasFilter = chatPartner?.contentFilter || false;
+      }
+
+      // If SENDER has filter ON → censor for everyone
+      // If RECEIVER (current user) has filter ON and SENDER doesn't → only current user sees ***
+      if (msg.text && msg.text.trim()) {
+        if (senderHasFilter) {
+          msg.text = await censorIfToxic(msg.text);
+        } else if (receiverId === myId.toString() && currentUser?.contentFilter) {
+          // Receiver has filter but sender doesn't → only receiver sees censored
+          msg.text = await censorIfToxic(msg.text);
+        }
+      }
+    }
 
     res.status(200).json(messages);
   } catch (error) {
@@ -52,27 +96,13 @@ export const sendMessage = async (req, res, next) => {
       throw new AppError(404, "Receiver not found");
     }
 
-    // Check content - toxic words replace, spam/phishing block
     let finalText = text;
+
+    // Spam/Phishing check - ALWAYS block regardless of filter setting
     if (text && text.trim()) {
       try {
+        const safetyResult = await analyzeSafety(text, null, senderId.toString());
 
-        // Get receiver to check their content filter setting
-        const receiver = await User.findById(receiverId).select("contentFilter");
-
-        // Call both services in parallel
-        const [modResult, safetyResult] = await Promise.all([
-          receiver?.contentFilter ? moderateText(text) : Promise.resolve(null),
-          analyzeSafety(text, null, senderId.toString()),
-        ]);
-
-        // Toxic words → replace with asterisks (only if receiver has filter on)
-        if (receiver?.contentFilter && modResult?.flagged) {
-          finalText = "********";
-          console.log("Message moderated (toxic words replaced)");
-        }
-
-        // Spam/Phishing detected → block the message
         const hasSpam = safetyResult?.flags?.includes("spam_detected");
         const hasPhishing = safetyResult?.flags?.includes("phishing_suspected");
 
@@ -86,7 +116,7 @@ export const sendMessage = async (req, res, next) => {
         }
       } catch (err) {
         if (err instanceof AppError) throw err;
-        console.error("Content filter check failed:", err.message);
+        console.error("Safety check failed:", err.message);
       }
     }
 
@@ -100,19 +130,58 @@ export const sendMessage = async (req, res, next) => {
       imageUrl = uploadResponse.secure_url;
     }
 
+    // Always store original text in DB
     const newMessage = await Message.create({
       senderId,
       receiverId,
-      text: finalText,  // censored text if flagged
+      text: finalText,
       image: imageUrl,
     });
 
-    const receiverSocketId = getReceiverSocketId(receiverId);
-    if (receiverSocketId) {
-      io.to(receiverSocketId).emit("newMessage", newMessage);
+    await newMessage.populate("senderId", "fullName profilePic");
+
+    // Get both users' content filter settings
+    const [sender, receiver] = await Promise.all([
+      User.findById(senderId).select("contentFilter"),
+      User.findById(receiverId).select("contentFilter"),
+    ]);
+
+    // Helper to censor text if toxic
+    const censorIfToxic = async (textToCheck) => {
+      if (!textToCheck || !textToCheck.trim()) return textToCheck;
+      try {
+        const modResult = await moderateText(textToCheck);
+        return modResult?.flagged ? "********" : textToCheck;
+      } catch {
+        return textToCheck;
+      }
+    };
+
+    let senderResponse = newMessage.toObject();
+    let receiverMessage = newMessage.toObject();
+
+    // If SENDER has filter ON → both sides see ***
+    if (sender?.contentFilter) {
+      const censoredText = await censorIfToxic(text);
+      senderResponse.text = censoredText;
+      receiverMessage.text = censoredText;
+      console.log("Message censored (sender has filter ON) - both sides see ***");
+    }
+    // If only RECEIVER has filter ON → only receiver sees ***
+    else if (receiver?.contentFilter) {
+      const censoredText = await censorIfToxic(text);
+      senderResponse.text = text; // Sender sees original
+      receiverMessage.text = censoredText;
+      console.log("Message censored (receiver has filter ON) - only receiver sees ***");
     }
 
-    res.status(201).json({ message: "Message sent successfully", data: newMessage });
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("newMessage", receiverMessage);
+    }
+
+    // Return text to sender
+    res.status(201).json({ message: "Message sent successfully", data: senderResponse });
   } catch (error) {
     next(error);
   }

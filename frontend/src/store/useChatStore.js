@@ -83,8 +83,19 @@ export const useChatStore = create((set, get) => ({
     try {
       const res = await axiosInstance.post(`/message/send/${selectedUser._id}`, messageData);
       const savedMessage = res.data.data ?? res.data;
+      
+      // Backend returns message with populated senderId
+      // Ensure senderId is properly formatted for comparison
+      const normalizedMessage = {
+        ...savedMessage,
+        senderId: savedMessage.senderId?._id || savedMessage.senderId,
+        receiverId: savedMessage.receiverId?._id || savedMessage.receiverId,
+      };
+      
       set((state) => ({
-        messages: state.messages.map((message) => (message._id === tempId ? savedMessage : message)),
+        messages: state.messages.map((message) => 
+          message._id === tempId ? normalizedMessage : message
+        ),
       }));
     } catch (error) {
       set((state) => ({
@@ -115,10 +126,13 @@ export const useChatStore = create((set, get) => ({
 
     socket.on("newMessage", (newMessage) => {
       const contacts = get().allContact || [];
-      const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
+      
+      // Handle both populated (object) and non-populated (string) senderId
+      const senderId = newMessage.senderId?._id || newMessage.senderId;
+      const isMessageSentFromSelectedUser = senderId === selectedUser._id;
 
       if (!isMessageSentFromSelectedUser) {
-        const sender = contacts.find((user) => user._id === newMessage.senderId);
+        const sender = contacts.find((user) => user._id === senderId);
         const senderName = sender?.fullName || "Someone";
         toast(`New message from ${senderName}`);
         return;
