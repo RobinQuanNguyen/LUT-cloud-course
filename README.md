@@ -261,6 +261,179 @@ docker compose down -v
 
 ---
 
+## Chat Safety Service
+
+The Chat Safety Service is a Python/FastAPI microservice that helps protect users from risky chat messages. Its main purpose is to detect spam, phishing messages, suspicious links, and unsafe message patterns before the message is delivered to the receiver.
+
+This service is different from the moderation service. The moderation service focuses mainly on toxic language detection using a machine learning model, while the Chat Safety Service focuses on spam and phishing detection using rule-based analysis.
+
+### Main Features
+
+- Detects spam-like messages
+- Detects phishing-related language
+- Detects suspicious URLs and unsafe links
+- Checks for repeated punctuation and excessive uppercase text
+- Supports single-message analysis
+- Supports batch-message analysis
+- Returns a risk score, risk level, detected flags, and explanations
+
+### Main Endpoints
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/risk/health` | GET | Checks if the service is running |
+| `/risk/analyze` | POST | Analyzes one message for spam, phishing, or suspicious content |
+| `/risk/analyze-batch` | POST | Analyzes multiple messages at once |
+| `/risk/demo` | GET | Runs a demo with sample safe and risky messages |
+
+### How it Works
+
+When a user sends a message, the backend can send the message content to the Chat Safety Service. The service checks the message and calculates a risk score from 0 to 100.
+
+A low score means the message is likely safe. A higher score means the message may contain spam, phishing, or suspicious content. The service also returns flags and explanations so the backend can understand why the message was considered risky.
+
+If the message is detected as spam or phishing, the backend can block the message before it reaches the receiver. This helps improve user safety and reduces harmful messages in the chat application.
+
+### How to Test
+
+Start the full application:
+
+```bash
+docker compose up --build
+```
+
+Check if the service is running:
+
+```bash
+curl http://localhost/risk/health
+```
+
+Test a risky message:
+
+```bash
+curl -X POST http://localhost/risk/analyze \
+  -H "Content-Type: application/json" \
+  -d '{
+    "messageId": "m1",
+    "senderId": "user1",
+    "text": "CLICK NOW!!! Verify your account immediately at http://fake-login.xyz"
+  }'
+```
+
+Expected result: the service should return a higher risk score with warning flags such as suspicious link, phishing language, spam language, or repeated punctuation.
+
+### Notes
+
+- This service uses rule-based detection.
+- It is useful for detecting spam and phishing patterns quickly.
+- It works together with the backend before the message is delivered.
+- It improves the safety and reliability of the chat application.
+
+---
+
+## Chat Analytics Service
+
+The Chat Analytics Service is a Python/FastAPI microservice that records and analyzes chat activity in the Chatify application. Its main purpose is to provide useful information about how users interact with the chat system.
+
+This service helps the project show how microservices can be used not only for core chat features, but also for analytics, reporting, and monitoring user behavior.
+
+### Main Features
+
+- Records single message events
+- Records multiple message events in batch
+- Calculates user-level chat statistics
+- Finds peak activity hours
+- Shows trending keywords from chat messages
+- Shows conversation statistics between users
+- Provides overall system activity overview
+- Provides daily activity timeline
+
+### Main Endpoints
+
+| Endpoint | Method | Purpose |
+|---|---|---|
+| `/analytics/health` | GET | Checks if the service is running |
+| `/analytics/event/message` | POST | Records one message event |
+| `/analytics/event/message-batch` | POST | Records multiple message events |
+| `/analytics/user/{user_id}` | GET | Shows analytics for one user |
+| `/analytics/peak-times` | GET | Shows the most active hours and days |
+| `/analytics/trending` | GET | Shows trending keywords |
+| `/analytics/conversations/{user_id}` | GET | Shows conversation statistics for one user |
+| `/analytics/overview` | GET | Shows overall chat system statistics |
+| `/analytics/activity-timeline` | GET | Shows daily activity over time |
+
+### How it Works
+
+When a user sends a message, the backend sends a message event to the Chat Analytics Service. The event includes information such as the sender ID, receiver ID, message text, and timestamp.
+
+The service stores the event and uses it to calculate different analytics results. For example, it can show how many messages were sent, which hours are the most active, which users are active, and which keywords appear often in conversations.
+
+The service can calculate:
+
+- Total number of messages
+- Number of active days
+- Average messages per day
+- Peak messaging hour
+- Hourly message distribution
+- Most active conversation partners
+- Average message length
+- Trending keywords
+- Daily activity timeline
+
+These analytics can help developers and administrators understand how the chat system is being used.
+
+### How to Test
+
+Start the full application:
+
+```bash
+docker compose up --build
+```
+
+Check if the service is running:
+
+```bash
+curl http://localhost/analytics/health
+```
+
+Record a test message:
+
+```bash
+curl -X POST http://localhost/analytics/event/message \
+  -H "Content-Type: application/json" \
+  -d '{
+    "senderId": "alice",
+    "receiverId": "bob",
+    "text": "Hello Bob, let us discuss the project meeting today"
+  }'
+```
+
+View the overall analytics:
+
+```bash
+curl http://localhost/analytics/overview
+```
+
+View peak activity times:
+
+```bash
+curl http://localhost/analytics/peak-times
+```
+
+View trending keywords:
+
+```bash
+curl http://localhost/analytics/trending
+```
+
+### Notes
+
+- This service is useful for analyzing chat behavior.
+- It can help show user activity patterns in the system.
+- It supports both single-message and batch-message events.
+- In production, the analytics data should be stored in a persistent database such as MongoDB.
+---
+
 ## Key Deployment Files
  
 | File | Purpose |
