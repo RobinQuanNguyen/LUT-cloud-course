@@ -56,14 +56,18 @@ export const sendMessage = async (req, res, next) => {
     let finalText = text;
     if (text && text.trim()) {
       try {
+
+        // Get receiver to check their content filter setting
+        const receiver = await User.findById(receiverId).select("contentFilter");
+
         // Call both services in parallel
         const [modResult, safetyResult] = await Promise.all([
-          moderateText(text),
+          receiver?.contentFilter ? moderateText(text) : Promise.resolve(null),
           analyzeSafety(text, null, senderId.toString()),
         ]);
 
-        // Toxic words → replace with asterisks
-        if (modResult?.flagged) {
+        // Toxic words → replace with asterisks (only if receiver has filter on)
+        if (receiver?.contentFilter && modResult?.flagged) {
           finalText = "********";
           console.log("Message moderated (toxic words replaced)");
         }
