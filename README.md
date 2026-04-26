@@ -1,4 +1,4 @@
-<h1>Chatify - Full-stack Chat Application</h1>\
+<h1>Chatify - Full-stack Chat Application</h1>
 Our project, Chatify, is a real-time chat application built with microservices, deployed on AWS EC2 using Docker Swarm. This project was built as part of the Cloud Services & Infrastructure course at LUT University.
 
 Live: https://lut-chatify.duckdns.org
@@ -223,9 +223,43 @@ docker compose down -v
 - Send a toxic message from the sender. It should appear as ********
 - Send a normal message. It should go through unchanged.
 
-
 ---
 
+## Usage Analytics Microservice
+
+- FastAPI service serving analytics data at `/usage-analytics/summary`
+- Reads message activity from MongoDB and calculates usage trends over time
+- Supports quick-range analysis such as 1 day, 7 days, 30 days, and custom date ranges
+- Returns message totals, business-hours vs off-hours activity, hourly usage breakdown, and text vs image percentages
+
+### How it Works
+
+- The frontend monitoring page calls the usage analytics service
+- The service reads message timestamps from MongoDB
+- It groups messages by hour in Finland local time (`Europe/Helsinki`)
+- It calculates:
+  - total messages
+  - business-hours and off-hours counts
+  - peak usage and lowest usage periods
+  - text vs image message distribution
+- The result is shown as charts and summary cards on the monitoring page
+
+### How to Test
+
+- Run `docker compose up --build`
+- Open `http://localhost/usage-analytics/summary` for raw JSON output
+- Or open the monitoring UI in the app and test:
+  - quick ranges such as last 7 days
+  - custom start and end times
+  - updated charts after sending more messages
+
+### Notes
+
+- This service analyzes message records only
+- It does not currently analyze login/logout events
+- If there are very few messages in the database, the charts will still work but may look sparse
+
+---
 
 ## Key Deployment Files
  
